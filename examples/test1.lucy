@@ -1,0 +1,27 @@
+
+Interesting Languages:
+
+1. Parasail - https://forge.open-do.org/plugins/moinmoin/parasail/
+2. SequenceL - https://texasmulticore.com/
+3. Futhark - https://futhark-lang.org/
+
+// Matrix Multiplication
+
+val A = [1, 2, 3; 4, 5, 6];
+val B = [4, 5; 7, 8; 1, 2];
+
+{A.len = B.len}
+fun dot(A, B) = sum (k < 1 to a.len) A[k] * B[k];
+
+assert {A.cols = B.rows}
+fun mul(A, B) = build {[i, j] <- 1 to A.rows, 1 to B.cols}
+					dot(A[i], B'[j]);
+
+fun mul(A, B) =
+	let C = new Matrix(A.rows, B.cols);
+	for (i, j in 1 to A.rows, 1 to B.cols)
+		C(i, j) = sum (k <- 1 to A.cols) A(i, k) * B(k, j);
+	return C;
+
+
+val C = A * B;

@@ -1,0 +1,14 @@
+Language Thoughts
+
+Some test examples to ensure usability should include:
+
+	1. A Linear Algebra example
+	2. Parse a book and generate random markov phonyms
+	3. Longest common subsequence
+	4. A simple webserver with simultaneous multiple page requests (i.e. slow echo and slow time)
+	5. Read and write from some kind of file i.e. convert jpegs to black and white or blur
+	6. A test of accessing native functions through an FFI
+	7. Read stock data from yahoo finance and then plot stock bollenger bands
+	8. Generate a stream and process then write to disk. i.e. jigsaw NCO -> Filter -> Disk
+	9. Some of the computer language benchmark game examples
+	
