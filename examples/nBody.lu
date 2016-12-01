@@ -1,0 +1,107 @@
+type vec : {
+	x : number,
+	y : number,
+	z : number
+}
+
+type body : {
+	mutable pos : vec,
+	mutable vel : vec,
+	mass : number
+}
+
+daysPerYear := 365.24;
+solarMass := 4 * pi * pi;
+
+jupiter := {
+	pos.x := 4.84143144246472090e+00;
+    pos.y := -1.16032004402742839e+00;
+    pos.z := -1.03622044471123109e-01;
+    vel.x := 1.66007664274403694e-03 * daysPerYear;
+    vel.y := 7.69901118419740425e-03 * daysPerYear;
+    vel.z := -6.90460016972063023e-05 * daysPerYear;
+    mass := 9.54791938424326609e-04 * solarMass;
+}
+
+saturn := {
+	pos.x := 8.34336671824457987e+00;
+    pos.y := 4.12479856412430479e+00;
+    pos.z := -4.03523417114321381e-01;
+    vel.x := -2.76742510726862411e-03 * daysPerYear;
+    vel.y := 4.99852801234917238e-03 * daysPerYear;
+    vel.z := 2.30417297573763929e-05 * daysPerYear;
+    mass := 2.85885980666130812e-04 * solarMass;
+}
+
+uranus := {
+	pos.x := 1.28943695621391310e+01;
+    pos.y := -1.51111514016986312e+01;
+    pos.z := -2.23307578892655734e-01;
+    vel.x := 2.96460137564761618e-03 * daysPerYear;
+    vel.y := 2.37847173959480950e-03 * daysPerYear;
+    vel.z := -2.96589568540237556e-05 * daysPerYear;
+    mass := 4.36624404335156298e-05 * solarMass;
+}
+
+neptune := {
+	pos.x := 1.53796971148509165e+01;
+    pos.y := -2.59193146099879641e+01;
+    pos.z := 1.79258772950371181e-01;
+    vel.x := 2.68067772490389322e-03 * daysPerYear;
+    vel.y := 1.62824170038242295e-03 * daysPerYear;
+    vel.z := -9.51592254519715870e-05 * daysPerYear;
+    mass := 5.15138902046611451e-05 * solarMass;
+}
+
+sun := {
+	mass = solarMass;
+}
+
+fun initSystem() := 
+	let
+		bodies := [sun, juipter, saturn, uranus, neptune];
+		p := sum(bodies.elements.vel * bodies.elements.mass);
+		sun.vel <= -p / sun.mass;
+	in
+		bodies
+
+
+fun advance(bodies: list mut body, dt: number) :=
+	let
+		[i, j] := [1...size(bodies), 1...size(bodies)] where (j > i);
+		r := bodies[i].pos - bodies[j].pos;
+		dsq := sum(r * r);
+		dist := sqrt(dsq);
+		mag := dt / (dsq * dist);
+		bodies[i].vel -= r * bodies[j].mass * mag;
+		bodies[j].vel += r * bodies[i].mass * mag; 
+
+	then
+		bodies.elements.pos += dt * bodies.elements.vel;
+
+fun energy(bodies: list body) :=
+	let
+		body := bodies.elements
+		e := sum(0.5 * body.mass * sum(body.vel * body.vel));
+	
+	and
+		[i, j] := [1...size(bodies), 1...size(bodies)] where (j > i);
+		[iBody, jBody] := [bodies[i], bodies[j]];
+		r := (iBody.pos - jBody.pos);
+		dist:= sqrt(sum(r * r));
+		deltaE := sum(iBody.mass * jBody.mass / dist);
+	
+	in
+		e - deltaE
+
+fun main(args: list string) :=
+	let
+		n := parseInt(args[1]);
+		bodies := initSystem();
+
+	seq
+		println("%.9f", energy(bodies));
+		repeat {	// This will be forced to be a sequential repeat as advance mutates an argument
+			advance(bodies, 0.01);
+		} n times;
+		println("%.9f", energy(bodies));
