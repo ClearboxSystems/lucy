@@ -1,5 +1,15 @@
 
+/*
+	For this test to pass, lexer must be able to parse
+		1. Block Comments
+		2. Assignment operator (:=)
+		3. Literal numbers
+		4. Lists
+		5. Symbolic vatiables
+		6. Addition and equality operators
+*/
+
+
 a := [1, 2, 3] + 10;
 test1 := (a = [11, 12, 13]);
-
 

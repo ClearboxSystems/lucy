@@ -11,4 +11,81 @@ Some test examples to ensure usability should include:
 	7. Read stock data from yahoo finance and then plot stock bollenger bands
 	8. Generate a stream and process then write to disk. i.e. jigsaw NCO -> Filter -> Disk
 	9. Some of the computer language benchmark game examples
+	10. Sort a list
 	
+Key design focus for Lucy
+
+1. Real time
+2. Concurrent
+3. Utilize avaliable compute resources (multi CPU cores + GPU)
+4. Automatic memory management
+5. Streaming
+6. JIT / dynamic scheduling
+7. Strongly typed
+8. Functional / pattern matched
+
+A tradeoff for performance vs strong typing may be that type information may be included for initial runs of code (or debug mode) and then as the code runs over and over again a hotspot jit can start to strip the type information to allow speed.
+
+Should be able to run real-time DSP, Electronic Structure Theory (EST), and genome manipulation / multi-scale (simbiosis) simulation. 
+
+clTune may be a relevant project for tuning GPU kernels....
+Look at clBlast and BLIS for intresting BLAS implementations for GPU and CPU
+
+
+For efficient parallel code execution it is important to:
+	1. Optimise memory access (so that the memory accesses are contiguous rather than strided)
+	2. Ensure that all threads within a thread block do not diverge on the code execution path
+
+ParaSail notes:
+
+It has been boiled down to four basic concepts: Modules, Types, Objects and Operations
+
+Module
+	- has an interface, and classes that implement it
+	- interface M <Formal is Int<>> is ...
+	- Supportes inheritance of interface and code
+
+Type
+	- is an instance of a Module
+	- type T is [new] M <Actual>;
+	- "T+" is polymorphic type for types inheriting from T's interface
+
+Object
+	- is an instance of a Type
+	- var Obj: T := Create(...);
+
+Operation
+	- is defined in a Module, and
+	- operates on one or more Objects of specified Types.
+	- are visible automatically based on types of parameters/result
+
+No pointers
+No global variables
+No global, garbage-collected heap
+No hidden aliasing
+No special syntax reserved for built-in types
+No run-time exception handling
+No explicit threads, lock/unlock, wait/signal
+No race conditions
+
+All types have additional null value; objects can be declared optional (i.e. null of OK) and can grow and shrink.
+This eliminaties many of the common uses for pointers (e.g. trees)
+	- Assignment (":=") is by copy, Move ("<==") and Swap ("<=>")
+
+Generalised indexing into containers replaces pointers for cyclic structures
+	- for each N in Directed_Graph[i].Successors loop...
+
+Region-Based storage Mgmt can replace global heap
+	- All objects are "local" with growth / shrinkage using local heap
+	- "null" value carries indication of region to use on growth
+
+Short-lived references to existing objects are permitted
+	- Reterned by user-defined indexing functions for example
+
+Objects are expandable (you can add additional information to an object without pointers!)
+
+This allows the compiler to evaluate things in parallel (for homogenous threads on shared memory)
+
+Loops are implements where each itteration is its own thread (so that it can run in parallel)
+	- the end of one itteration can pass a parameter to the next itteration
+	- in this case, the same thread will be reused and the loop will execute essentially in serial

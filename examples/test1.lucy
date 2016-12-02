@@ -1,9 +1,12 @@
 
+/*
 Interesting Languages:
 
 1. Parasail - https://forge.open-do.org/plugins/moinmoin/parasail/
 2. SequenceL - https://texasmulticore.com/
 3. Futhark - https://futhark-lang.org/
+4. Halide - http://halide-lang.org/
+*/
 
 // Matrix Multiplication
 
@@ -25,3 +28,24 @@ fun mul(A, B) =
 
 
 val C = A * B;
+
+fun dotProd(A, B) := sum(A * B);
+
+fun matMul(A, B) [i, j] := sum(A[i, all] * B[all, j]);
+
+fun parseInt(str: String) := 
+	let 
+		i := 1 ... (str.len);
+		mult := 10 ^ (i - 1);
+		num := str - '0';
+	in
+		sum(mult * str[i]);
+
+fun longestCommonRegion(a: list, b: list) : list := 
+	
+fun matchLen(a, b) :=
+	case (a, b) in
+		(a::as, b::bs) => if a <> b then 0 else 1 + matchLen(a, b);
+		_ => 0;
+
+

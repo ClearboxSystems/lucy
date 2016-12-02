@@ -60,7 +60,7 @@ sun := {
 fun initSystem() := 
 	let
 		bodies := [sun, juipter, saturn, uranus, neptune];
-		p := sum(bodies.elements.vel * bodies.elements.mass);
+		p := sum(bodies->.vel * bodies->.mass);
 		sun.vel <= -p / sun.mass;
 	in
 		bodies
@@ -69,7 +69,7 @@ fun initSystem() :=
 fun advance(bodies: list mut body, dt: number) :=
 	let
 		[i, j] := [1...size(bodies), 1...size(bodies)] where (j > i);
-		r := bodies[i].pos - bodies[j].pos;
+		r := bodies.pos - bodies.pos;
 		dsq := sum(r * r);
 		dist := sqrt(dsq);
 		mag := dt / (dsq * dist);
@@ -77,12 +77,11 @@ fun advance(bodies: list mut body, dt: number) :=
 		bodies[j].vel += r * bodies[i].mass * mag; 
 
 	then
-		bodies.elements.pos += dt * bodies.elements.vel;
+		bodies.pos += dt * bodies.vel;
 
 fun energy(bodies: list body) :=
 	let
-		body := bodies.elements
-		e := sum(0.5 * body.mass * sum(body.vel * body.vel));
+		e := sum(0.5 * bodies.mass * sum(bodies.vel * bodies.vel));
 	
 	and
 		[i, j] := [1...size(bodies), 1...size(bodies)] where (j > i);
