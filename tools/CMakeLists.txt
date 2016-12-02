@@ -19,7 +19,7 @@ add_executable(token
 )
 set_target_properties(
     token PROPERTIES
-    COMPILE_FLAGS "-O3 -g -std=c++11"
+    COMPILE_FLAGS "-O3 -g -std=c++11 -Wno-deprecated-register"
 )
 target_link_libraries(
     token

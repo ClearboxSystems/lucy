@@ -34,7 +34,7 @@
 
 void doLex() {
     int tok;
-    while(tok = yylex()) {
+    while( (tok = yylex()) ) {
         printf("%d", tok);
         if(tok == NUMBER) printf(" = %d\n", yylval.num); else
         if(tok == IDENT) printf(" = %s\n", yylval.symbol);
