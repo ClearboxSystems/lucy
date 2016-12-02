@@ -7,6 +7,8 @@ cmake_policy(SET CMP0012 OLD)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 find_package(LLVM 3.8 REQUIRED core mcjit native)
+find_package(BISON 3)
+find_package(FLEX 2.5)
 
 #message (STATUS "LLVM_FOUND: " ${LLVM_FOUND})
 #message (STATUS "LLVM_CXXFLAGS: " ${LLVM_CXXFLAGS})

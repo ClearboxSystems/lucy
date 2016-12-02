@@ -1,10 +1,13 @@
 #include <cctype>
 #include <cstdint>
 #include <cstdio>
+#include <string>
 #include "token.hpp"
 
 static std::string identifierStr; // Filled in if tok_identifier
 static double numVal;             // Filled in if tok_number
+
+/*
 
 int getToken() {
 	static int lastChar = ' ';
@@ -53,4 +56,12 @@ int getToken() {
   	int thisChar = lastChar;
   	lastChar = getchar();
   	return thisChar;
+}
+
+ */
+
+int main(int argc, char **argv) {
+    printf("Hello World\n");
+    
+    return 0;
 }
