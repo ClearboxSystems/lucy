@@ -1,9 +1,10 @@
-%option noyywrap
+%option noyywrap nodefault yylineno
 
 %x COMMENT
 
 %{
 #include "lucy.tab.hpp"
+#include "ast.h"
 #define YY_DECL extern "C" int yylex()
 %}
 
@@ -29,37 +30,38 @@
 [0-9]+      { yylval.num = atoi(yytext); return NUMBER; }
 [a-zA-Z][a-zA-Z0-9]*    { yylval.symbol = yytext; return IDENT; }
 [ \t\n]     /* ignore whitespace */
-.           { printf("Unexpected character %c\n", *yytext); }
+.           { yyerror("Unexpected character %c\n", *yytext); }
 %%
 
-void doLex() {
-    int tok;
-    while( (tok = yylex()) ) {
-        printf("%d", tok);
-        if(tok == NUMBER) printf(" = %d\n", yylval.num); else
-        if(tok == IDENT) printf(" = %s\n", yylval.symbol);
-        else printf("\n");
-    }
-}
 
-int main(int argc, char **argv) {
-    int i;
-    if(argc < 2) { /* just read stdin */
-//        curfilename = "(stdin)";
-//        yylineno = 1;
-        doLex();
-    } else
-    for(i = 1; i < argc; i++) {
-        FILE *f = fopen(argv[i], "r");
-
-        if(!f) {
-            perror(argv[1]);
-            return (1);
-        }
-//        curfilename = argv[i]; /* for addref */
-        yyrestart(f);
-//        yylineno = 1;
-        doLex();
-        fclose(f);
-    }
-}
+//void doLex() {
+//    int tok;
+//    while( (tok = yylex()) ) {
+//        printf("%d", tok);
+//        if(tok == NUMBER) printf(" = %d\n", yylval.num); else
+//        if(tok == IDENT) printf(" = %s\n", yylval.symbol);
+//        else printf("\n");
+//    }
+//}
+//
+//int main(int argc, char **argv) {
+//    int i;
+//    if(argc < 2) { /* just read stdin */
+////        curfilename = "(stdin)";
+////        yylineno = 1;
+//        doLex();
+//    } else
+//    for(i = 1; i < argc; i++) {
+//        FILE *f = fopen(argv[i], "r");
+//
+//        if(!f) {
+//            perror(argv[1]);
+//            return (1);
+//        }
+////        curfilename = argv[i]; /* for addref */
+//        yyrestart(f);
+////        yylineno = 1;
+//        doLex();
+//        fclose(f);
+//    }
+//}

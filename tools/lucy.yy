@@ -1,14 +1,15 @@
 /* simplest version of calculator */
 %{
 #include <stdio.h>
+#include "ast.h"
 extern "C" int yylex();
-extern "C" int yyparse();
 extern "C" FILE *yyin;
  
-void yyerror(const char *s);
 %}
 
 %union {
+	struct ast *a;
+	struct list *l;
     int num;
     char *symbol;
 }
@@ -20,42 +21,37 @@ void yyerror(const char *s);
 %token ADD SUB MUL DIV EQUAL
 %token OP CP OL CL LS
 %token EOS
-%token ABS EOL
 
-%type <num> exp factor term
+%type <a> exp assign
+%type <l> list
+
+%nonassoc ASSIGN
+%left ADD SUB
+%left MUL DIV
+%nonassoc UMINUS
+
 %%
 
 calclist: /* nothing */ 
- | calclist exp EOL { printf("= %d\n", $2); }
+ | calclist exp EOS { printAst($2); printf(" = %d\n", evalAst($2)); freeAst($2); }
+ | calclist assign EOS { printf("Assign expression\n"); }
  ;
 
-list: exp
- | list LS exp { }
+assign: IDENT ASSIGN exp {  printf("Assign\n"); }
+
+list: { $$ = newlist(); }
+ | exp { $$ = newlist($1); }
+ | exp LS list { $$ = growlist($1, $3); }
  ;
 
-exp: factor 
- | exp ADD factor { $$ = $1 + $3; }
- | exp SUB factor { $$ = $1 - $3; }
+exp: exp ADD exp 	{ $$ = newast('+', $1, $3); }
+ | exp SUB exp 		{ $$ = newast('-', $1, $3); }
+ | exp MUL exp 		{ $$ = newast('*', $1, $3); }
+ | exp DIV exp 		{ $$ = newast('/', $1, $3); }
+ | OP exp CP 		{ $$ = $2; }
+ | OL list CL 		{ $$ = newast('L', NULL, (struct ast *)$2); } 
+ | SUB exp %prec UMINUS { $$ = newast('M', NULL, $2); }
+ | NUMBER			{ $$ = newnum($1); }
  ;
-
-factor: term 
- | factor MUL term { $$ = $1 * $3; }
- | factor DIV term { $$ = $1 / $3; }
- ;
-
-term: NUMBER 
- | ABS term { $$ = $2 >= 0? $2 : - $2; }
- | OP exp CP { $$ = $2; }
- | OL list CL { printf("We have a list!\n"); } 
-;
 
 %%
-//int main(int argc, char **argv)
-//{
-// yyparse();
-//}
-
-void yyerror(const char *s)
-{
- fprintf(stderr, "error: %s\n", s);
-}
