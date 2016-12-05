@@ -1,12 +1,17 @@
 %option noyywrap nodefault yylineno
 
+%{
+#include "lexer.hpp"
+
+typedef lucy::Parser::token token;
+#define yyterminate() return( token::END )
+%}
+
 %x COMMENT
 
-%{
-#include "lucy.tab.hpp"
-#include "ast.h"
-#define YY_DECL extern "C" int yylex()
-%}
+%option debug
+%option c++
+%option yyclass="Lexer"
 
 %%
 "/*"                { BEGIN(COMMENT); }

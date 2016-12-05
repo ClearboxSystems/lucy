@@ -14,7 +14,7 @@ ADD_FLEX_BISON_DEPENDENCY(LucyScanner LucyParser)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(token 
-	ast.cpp
+    ast.cpp
     ${BISON_LucyParser_OUTPUTS} 
     ${FLEX_LucyScanner_OUTPUTS}
 )
@@ -24,5 +24,4 @@ set_target_properties(
 )
 target_link_libraries(
     token
-    
 )

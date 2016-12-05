@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <ast.h>
 
+extern int yyparse();
 
 struct ast *newast(int nodetype, struct ast *left, struct ast *right) {
 	struct ast *a = (struct ast *)malloc(sizeof(struct ast));

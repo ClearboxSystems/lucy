@@ -3,7 +3,6 @@
 // Interface to flex
 extern int yylineno;
 void yyerror(const char *s, ...);
-extern "C" int yyparse();
 
 // Nodes in the AST
 struct ast {
@@ -35,3 +34,11 @@ void printlist(struct list *);
 int evalAst(struct ast *);
 void printAst(struct ast* a);
 void freeAst(struct ast *);
+
+class Node {
+public:
+	virtual ~Node() { }
+};
+
+class NExpression : public Node {
+};
