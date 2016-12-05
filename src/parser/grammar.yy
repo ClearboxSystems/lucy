@@ -1,84 +1,66 @@
-%skeleton "lalr1.cc"
+%skeleton "lalr1.cc" /* -*- C++ -*- */
 %require "3.0.2"
-
-%verbose
-
 %defines
-%define parser_class_name {Parser}
-%define api.namespace {bison}
+%define parser_class_name {BisonParser}
 
-%code requires{
-    #include "tree.hpp"
+%define api.token.constructor
+%define api.value.type variant
+%define parse.assert
 
-    class STree;
-}
-
-%code provides{
-    # define YY_DECL \
-        bison::Parser::token yylex(STree &tree)
-
-    YY_DECL;
-}
-
-%parse-param { STree &tree }
-
-
-%union {
-    ASTNode *node;
-    int num;
-    char *symbol;
-    std::vector<ASTNode*> *nodes;
-}
-
-%destructor {
-    if ($$)  { delete ($$); ($$) = nullptr; }
-} <node>
-
-%define api.token.prefix {}
-
-%token <num> NUMBER 
-%token <symbol> IDENT
-%token ASSIGN
-%token ADD SUB MUL DIV EQUAL
-%token OP CP OL CL LS
-%token SEMICOLON
-%token LET
-%token END
-
-%type <node> exp
-%type <nodes> list
-
-%left ADD SUB
-%left MUL DIV
-%nonassoc UMINUS
-
-%%
-%start calclist;
-
-calclist: /* nothing */ 
-  exp END { tree.set_root($1); printf("Hello\n"); }
- ;
-
-list: { $$ = new std::vector<ASTNode *>(); }
- | exp { $$ = new std::vector<ASTNode *>(); $$->push_back($1); }
- | list LS exp { $$ = $1; $$->push_back($3); }
- ;
-
-exp: exp ADD exp        { $$ = new BinaryNode('+', $1, $3); }
- | exp SUB exp          { $$ = new BinaryNode('-', $1, $3); }
- | exp MUL exp          { $$ = new BinaryNode('*', $1, $3); }
- | exp DIV exp          { $$ = new BinaryNode('/', $1, $3); }
- | OP exp CP            { $$ = $2; }
- | OL list CL           { $$ = new ListNode($2); } 
- | SUB exp %prec UMINUS { $$ = new UnaryNode('M', $2); }
- | NUMBER               { $$ = new NumberNode($1); }
- ;
-
-
-%%
-
-void
-bison::Parser::error( const std::string &err_message )
+%code requires
 {
-   std::cerr << "Error: " << err_message << "\n";
+# include <string>
+class Parser;
+}
+
+// The parsing context.
+%param { Parser& parser }
+
+%locations
+%initial-action
+{
+  // Initialize the initial location.
+  @$.begin.filename = @$.end.filename = &parser.file;
+};
+
+%define parse.trace
+%define parse.error verbose
+
+%code
+{
+# include "parser.hpp"
+}
+
+%define api.token.prefix {TOK_}
+%token
+  END  0  "end of file"
+  PLUS    "+"
+  SEMICOLON ";"
+;
+
+%token <std::string> IDENTIFIER "identifier"
+%token <int> NUMBER "number"
+%type  <int> exp
+
+%printer { yyoutput << $$; } <*>;
+
+%%
+%start unit;
+
+unit: 
+  exp SEMICOLON { std::cout << "MATCH" << std::endl; parser.result = $1; };
+
+%left "+" "-";
+%left "*" "/";
+exp:
+  exp "+" exp   { $$ = $1 + $3; }
+| "(" exp ")"   { std::swap ($$, $2); }
+| "identifier"  { $$ = parser.variables[$1]; }
+| "number"      { std::swap ($$, $1); };
+
+
+%%
+
+void yy::BisonParser::error (const location_type& l, const std::string& m) {
+  parser.error (l, m);
 }
