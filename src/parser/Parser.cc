@@ -15,19 +15,14 @@ int parserRun(int argc, char **argv) {
         std::istringstream iss(input);
         Lexer lexer = Lexer(&iss);
 
-        while (int tok = lexer.yylex(&tokval)) {
+        while ((int tok = lexer.yylex(&tokval)) != lucy::Parser::token::END) {
         	printf("Lex: %d", tok);
         	if (tok == lucy::Parser::token::INTEGER)
 	        	printf("\t INT -> %d", tokval.ival);
 			printf("\n");        		
-			i++;
-			 if ( i > 10) break;
         }
 
         fprintf(stderr, "ready> ");
-        i++
-
-        if (i > 20) break;
     }
 
 }
