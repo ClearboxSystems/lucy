@@ -9,6 +9,9 @@
 namespace lucy {
 using namespace std;
 
+
+
+
 void doLexing(Lexer &lexer) {
     BisonParser::semantic_type tokval;
 
@@ -62,13 +65,13 @@ int Parser::testLexer(int argc, char **argv) {
         }
     } else {
         fprintf(stderr, "ready> ");
-        while (std::getline(std::cin, input)) {
-            std::istringstream iss(input);
-            lexer.setInput(&iss);
+//        while (std::getline(std::cin, input)) {
+//            std::istringstream iss(input);
+            lexer.setInput(&std::cin);
             parser.parse();
 //            doLexing(lexer);
-            fprintf(stderr, "ready> ");
-        }
+//            fprintf(stderr, "ready> ");
+//        }
         fprintf(stderr, "\n");
     }
     return 0;

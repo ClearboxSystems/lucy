@@ -18,6 +18,7 @@ typedef lucy::BisonParser::token token;
 "/*"                { BEGIN(COMMENT); }
 <COMMENT>"*/"       { BEGIN(INITIAL); }
 <COMMENT>([^*]|\n)+|. 	/* ignore comments */
+<COMMENT><<EOF>>    { printf("Error: Unterminated comment\n"); return token::END; } 
 
 [ \t\n]+			/* ignore whitespace */
 "//"[^\n]*	   		/* ignore comments */
