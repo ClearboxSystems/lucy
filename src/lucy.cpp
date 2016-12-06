@@ -22,5 +22,5 @@
 
 #include "parser/Parser.hh"
 int main(int argc, char **argv) {
-	return parserRun(argc, argv);
+	return testLexer(argc, argv);
 }

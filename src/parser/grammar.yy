@@ -19,13 +19,20 @@
 
 %union {
 	int ival;
+	char *symbol;
 }
 
 %define api.token.prefix {}
 
 %token <ival> INTEGER
+%token <symbol> IDENTIFIER
+%token ASSIGN
 %token ADD
+%token EQUALS
+%token COMMA
 %token SEMICOLON
+%token OPEN_PAREN CLOSE_PAREN
+%token LIST_START LIST_END
 %token END
 
 %type <ival> top expr

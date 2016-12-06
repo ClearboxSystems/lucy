@@ -1,3 +1,3 @@
 #pragma once
 
-int parserRun(int argc, char **argv);
+int testLexer(int argc, char **argv);
