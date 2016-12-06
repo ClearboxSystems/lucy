@@ -1,66 +1,56 @@
-%skeleton "lalr1.cc" /* -*- C++ -*- */
+%skeleton "lalr1.cc"
 %require "3.0.2"
-%defines
-%define parser_class_name {BisonParser}
 
-%define api.token.constructor
-%define api.value.type variant
-%define parse.assert
+%verbose
 
-%code requires
-{
-# include <string>
-class Parser;
+%defines 
+%define parser_class_name {Parser}
+%define api.namespace {lucy}
+
+%code requires {
+	class Lexer;
 }
 
-// The parsing context.
-%param { Parser& parser }
+%param { Lexer &lexer }
 
-%locations
-%initial-action
-{
-  // Initialize the initial location.
-  @$.begin.filename = @$.end.filename = &parser.file;
-};
-
-%define parse.trace
-%define parse.error verbose
-
-%code
-{
-# include "parser.hpp"
+%code {
+	static int yylex(lucy::Parser::semantic_type *yylval, Lexer &lexer);
 }
 
-%define api.token.prefix {TOK_}
-%token
-  END  0  "end of file"
-  PLUS    "+"
-  SEMICOLON ";"
-;
+%union {
+	int ival;
+}
 
-%token <std::string> IDENTIFIER "identifier"
-%token <int> NUMBER "number"
-%type  <int> exp
+%define api.token.prefix {}
 
-%printer { yyoutput << $$; } <*>;
+%token <ival> INTEGER
+%token ADD
+%token SEMICOLON
+%token END
 
-%%
-%start unit;
+%type <ival> top expr
 
-unit: 
-  exp SEMICOLON { std::cout << "MATCH" << std::endl; parser.result = $1; };
-
-%left "+" "-";
-%left "*" "/";
-exp:
-  exp "+" exp   { $$ = $1 + $3; }
-| "(" exp ")"   { std::swap ($$, $2); }
-| "identifier"  { $$ = parser.variables[$1]; }
-| "number"      { std::swap ($$, $1); };
-
+%left ADD
 
 %%
+%start top;
 
-void yy::BisonParser::error (const location_type& l, const std::string& m) {
-  parser.error (l, m);
+top :
+ 	expr SEMICOLON 	{ printf("= %d", $1); $$ = $1; }
+ ;	
+
+ expr :
+ 	expr ADD expr 	{ $$ = $1 + $3; }
+  |	INTEGER			{ $$ = $1; }
+  ;
+
+%%
+#include "Lexer.hh"
+
+static int yylex(lucy::Parser::semantic_type *yylval, Lexer &lexer) {
+	return lexer.yylex(yylval);
+}
+
+void lucy::Parser::error( const std::string &errorMessage) {
+	std::cerr << "Error: " << errorMessage << "\n";
 }

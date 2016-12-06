@@ -1,28 +1,26 @@
 find_package(BISON 3)
 find_package(FLEX 2.5)
 
-BISON_TARGET(BisonParser
+BISON_TARGET(bparser
   ${CMAKE_CURRENT_SOURCE_DIR}/grammar.yy
-  ${CMAKE_CURRENT_BINARY_DIR}/BisonParser.cc)
+  ${CMAKE_CURRENT_BINARY_DIR}/bison_parser.cpp)
 
-FLEX_TARGET(FlexLexer
+FLEX_TARGET(lexer
   ${CMAKE_CURRENT_SOURCE_DIR}/lexer.ll
-  ${CMAKE_CURRENT_BINARY_DIR}/FlexLexer.cc)
+  ${CMAKE_CURRENT_BINARY_DIR}/flex_lexer.cpp)
 
-ADD_FLEX_BISON_DEPENDENCY(FlexLexer BisonParser)
+ADD_FLEX_BISON_DEPENDENCY(lexer bparser)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(PARSER_SOURCES
-    Parser.cc
-    Lexer.cc
+    parser.cpp
 )
 
 add_library(parser
   ${PARSER_SOURCES}
-  ${BISON_BisonParser_OUTPUTS}
-  ${FLEX_FlexLexer_OUTPUTS}
-)
+  ${BISON_bparser_OUTPUTS}
+  ${FLEX_lexer_OUTPUTS})
 
 set_target_properties(
     parser PROPERTIES
