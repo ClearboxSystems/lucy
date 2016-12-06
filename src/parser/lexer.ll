@@ -2,7 +2,7 @@
 #include "BisonParser.hh"
 #include "Lexer.hh"
 
-typedef lucy::Parser::token token;
+typedef lucy::BisonParser::token token;
 
 #define yyterminate() return ( token::END )
 %}

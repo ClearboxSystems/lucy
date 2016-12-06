@@ -1,3 +1,12 @@
 #pragma once
 
-int testLexer(int argc, char **argv);
+
+namespace lucy {
+
+class Parser {
+public:
+	int testLexer(int argc, char **argv);
+
+};
+
+}

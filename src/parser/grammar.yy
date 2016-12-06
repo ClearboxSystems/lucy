@@ -4,17 +4,24 @@
 %verbose
 
 %defines 
-%define parser_class_name {Parser}
+%define parser_class_name {BisonParser}
 %define api.namespace {lucy}
 
+%define parse.trace
+%define parse.error verbose
+
 %code requires {
-	class Lexer;
+	namespace lucy {
+		class Lexer;
+		class Parser;
+	}
 }
 
 %param { Lexer &lexer }
+%parse-param { lucy::Parser &parser}
 
 %code {
-	static int yylex(lucy::Parser::semantic_type *yylval, Lexer &lexer);
+	static int yylex(lucy::BisonParser::semantic_type *yylval, lucy::Lexer &lexer);
 }
 
 %union {
@@ -33,7 +40,7 @@
 %token SEMICOLON
 %token OPEN_PAREN CLOSE_PAREN
 %token LIST_START LIST_END
-%token END
+%token END 0
 
 %type <ival> top expr
 
@@ -43,10 +50,10 @@
 %start top;
 
 top :
- 	expr SEMICOLON 	{ printf("= %d", $1); $$ = $1; }
+  | top expr SEMICOLON { printf(" = %d\n", $2); $$ = $2; }
  ;	
 
- expr :
+expr :
  	expr ADD expr 	{ $$ = $1 + $3; }
   |	INTEGER			{ $$ = $1; }
   ;
@@ -54,10 +61,10 @@ top :
 %%
 #include "Lexer.hh"
 
-static int yylex(lucy::Parser::semantic_type *yylval, Lexer &lexer) {
+static int yylex(lucy::BisonParser::semantic_type *yylval, lucy::Lexer &lexer) {
 	return lexer.yylex(yylval);
 }
 
-void lucy::Parser::error( const std::string &errorMessage) {
+void lucy::BisonParser::error( const std::string &errorMessage) {
 	std::cerr << "Error: " << errorMessage << "\n";
 }

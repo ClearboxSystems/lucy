@@ -21,6 +21,9 @@
 // }
 
 #include "parser/Parser.hh"
+
 int main(int argc, char **argv) {
-	return testLexer(argc, argv);
+	lucy::Parser parser;
+	return parser.testLexer(argc, argv);
 }
+
