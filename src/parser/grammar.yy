@@ -42,7 +42,7 @@
 %token LIST_START LIST_END
 %token END 0
 
-%type <ival> top expr
+%type <ival> expr
 
 %left ADD
 
@@ -50,7 +50,7 @@
 %start top;
 
 top :
-  | top expr SEMICOLON { printf(" = %d\n", $2); $$ = $2; }
+  | top expr SEMICOLON { printf(" = %d\n", $2); }
  ;	
 
 expr :
