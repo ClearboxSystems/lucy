@@ -21,5 +21,5 @@ add_executable(calc
 
 set_target_properties(
     calc PROPERTIES
-    COMPILE_FLAGS "-O3 -g -std=c++11"
+    COMPILE_FLAGS "-O3 -g -std=c++11 -Wno-deprecated-register"
 )
