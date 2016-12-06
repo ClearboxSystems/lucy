@@ -14,7 +14,8 @@ class Lexer : public yyFlexLexer {
 	lucy::Parser::semantic_type *yylval;
 
 public:
-	Lexer(std::istream *in);
+	Lexer();
+	void setInput(std::istream *in);
 	int yylex(lucy::Parser::semantic_type *l_val);
 };
 

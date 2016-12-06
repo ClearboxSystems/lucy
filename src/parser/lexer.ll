@@ -18,10 +18,9 @@ typedef lucy::Parser::token token;
 "/*"                { BEGIN(COMMENT); }
 <COMMENT>"*/"       { BEGIN(INITIAL); }
 <COMMENT>([^*]|\n)+|. 	/* ignore comments */
-<COMMENT><<EOF>>    { printf("Error: Unterminated comment\n"); } 
-"//".*\n    		/* ignore comments */
 
 [ \t\n]+			/* ignore whitespace */
+"//"[^\n]*	   		/* ignore comments */
 
 ":=" return token::ASSIGN;
 "+" return token::ADD;

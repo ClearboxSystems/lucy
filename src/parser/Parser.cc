@@ -6,11 +6,8 @@
 #include <string>
 #include "Lexer.hh"
 
-void doLexing(Lexer &lexer, bool debug) {
+void doLexing(Lexer &lexer) {
     lucy::Parser::semantic_type tokval;
-
-    if (debug) 
-        lexer.set_debug(true);
 
     int tok;
     while ((tok = lexer.yylex(&tokval)) != lucy::Parser::token::END) {
@@ -24,10 +21,8 @@ void doLexing(Lexer &lexer, bool debug) {
 }
 
 int testLexer(int argc, char **argv) {
-
 	std::string input;
     std::vector<std::string> files;
-
 
     bool debugLexer = false;
     for (int i = 1; i < argc; ++i)
@@ -36,14 +31,19 @@ int testLexer(int argc, char **argv) {
         else if (argv[i][0] != '-')
             files.push_back(argv[i]);
 
+    Lexer lexer = Lexer();
+    if (debugLexer) 
+        lexer.set_debug(true);
+
+
     if (files.size() > 0) {
         for (auto file = files.begin(); file != files.end(); ++file) {
             std::cout << "Lexing file: " << *file << std::endl;
             std::ifstream fileStream;
             fileStream.open(*file);
             if (fileStream.is_open()) {
-                Lexer lexer = Lexer(&fileStream);
-                doLexing(lexer, debugLexer);
+                lexer.setInput(&fileStream);
+                doLexing(lexer);
                 fileStream.close();
             } else {
                 fprintf(stderr, "Unable to open: %s\n" , (*file).c_str());
@@ -53,8 +53,8 @@ int testLexer(int argc, char **argv) {
         fprintf(stderr, "ready> ");
         while (std::getline(std::cin, input)) {
             std::istringstream iss(input);
-            Lexer lexer = Lexer(&iss);
-            doLexing(lexer, debugLexer);
+            lexer.setInput(&iss);
+            doLexing(lexer);
             fprintf(stderr, "ready> ");
         }
         fprintf(stderr, "\n");

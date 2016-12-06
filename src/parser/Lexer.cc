@@ -1,6 +1,9 @@
 #include "Lexer.hh"
 
-Lexer::Lexer(std::istream *in) : yyFlexLexer(in), yylval(nullptr) {
+Lexer::Lexer() : yyFlexLexer(), yylval(nullptr) {}
+
+void Lexer::setInput(std::istream *in) {
+	switch_streams(in);
 }
 
 int Lexer::yylex(lucy::Parser::semantic_type *l_val) {
