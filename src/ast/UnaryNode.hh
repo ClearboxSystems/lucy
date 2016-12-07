@@ -1,6 +1,7 @@
 #pragma once
-#include "node.hpp"
+#include "ASTNode.hh"
 
+namespace lucy {
 
 class UnaryNode : public ASTNode {
     char opcode;
@@ -8,5 +9,7 @@ class UnaryNode : public ASTNode {
 
 public:
     UnaryNode(char opcode, ASTNode *operand);
-  
+  	std::string toString();  
 };
+
+}

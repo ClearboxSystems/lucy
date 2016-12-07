@@ -11,9 +11,11 @@
 %define parse.error verbose
 
 %code requires {
+	#include "../ast.hh"
+	#include "Parser.hh"
+
 	namespace lucy {
 		class Lexer;
-		class Parser;
 	}
 }
 
@@ -26,15 +28,20 @@
 
 %union {
 	int ival;
-	char *symbol;
+	char *string;
+	ASTNode *node;
+	SymbolNode *symbol;
+	AssignmentNode *assign;
+	std::vector<ASTNode *> *list;
 }
 
 %define api.token.prefix {}
 
 %token <ival> INTEGER
-%token <symbol> IDENTIFIER
+%token <string> IDENTIFIER
 %token ASSIGN
-%token ADD
+%token ADD SUBTRACT
+%token MULTIPLY DIVIDE
 %token EQUALS
 %token COMMA
 %token SEMICOLON
@@ -42,20 +49,51 @@
 %token LIST_START LIST_END
 %token END 0
 
-%type <ival> expr
+%type <node> expr statement
+%type <symbol> symbol
+%type <assign> assignment
+%type <list> list
 
-%left ADD
+%nonassoc ASSIGN
+%nonassoc EQUALS
+%left ADD SUB
+%left MUL DIV
 
 %%
 %start top;
 
 top :
-  | top expr SEMICOLON { printf(" = %d\n", $2); }
+  | top statement { parser.emitStatement($2); }
  ;	
 
+statement :
+    expr SEMICOLON { $$ = $1; }
+  | assignment SEMICOLON { $$ = $1; }
+  ;
+
+list :	{ $$ = new std::vector<ASTNode *>(); }
+ | expr { 
+ 		$$ = new std::vector<ASTNode *>(); 
+ 		$$->push_back($1); 
+ 	}
+ | list COMMA expr { $$ = $1; $$->push_back($3); }
+ ;
+
+assignment : symbol ASSIGN expr { 
+						$$ = new AssignmentNode($1, $3); }
+
+symbol : IDENTIFIER				{ $$ = new SymbolNode($1); }
+
 expr :
- 	expr ADD expr 	{ $$ = $1 + $3; }
-  |	INTEGER			{ $$ = $1; }
+    expr ADD expr 				{ $$ = new BinaryNode('+', $1, $3); }
+  | expr SUBTRACT expr			{ $$ = new BinaryNode('-', $1, $3); }
+  | expr MULTIPLY expr 			{ $$ = new BinaryNode('*', $1, $3); }
+  | expr DIVIDE expr 			{ $$ = new BinaryNode('/', $1, $3); }
+  | expr EQUALS expr 			{ $$ = new BinaryNode('=', $1, $3); }
+  | symbol 						{ $$ = $1; }
+  |	INTEGER						{ $$ = new NumberNode($1); }
+  | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; }
+  | LIST_START list LIST_END 	{ $$ = new ListNode($2); }
   ;
 
 %%

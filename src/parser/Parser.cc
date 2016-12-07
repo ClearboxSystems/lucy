@@ -9,7 +9,10 @@
 namespace lucy {
 using namespace std;
 
-
+void Parser::emitStatement(ASTNode *node) {
+    cout << node->toString() << endl;
+    cout << "> ";
+}
 
 
 void doLexing(Lexer &lexer) {

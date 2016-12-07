@@ -25,6 +25,9 @@ typedef lucy::BisonParser::token token;
 
 ":=" return token::ASSIGN;
 "+" return token::ADD;
+"-" return token::SUBTRACT;
+"*" return token::MULTIPLY;
+"/" return token::DIVIDE;
 "=" return token::EQUALS;
 "(" return token::OPEN_PAREN;
 ")" return token::CLOSE_PAREN;
@@ -38,7 +41,7 @@ typedef lucy::BisonParser::token token;
 	return token::INTEGER;
 }
 [a-zA-Z][a-zA-Z0-9]*    { 
-	yylval->symbol = yytext; 
+	yylval->string = yytext; 
 	return token::IDENTIFIER;
 } 
 
