@@ -15,4 +15,8 @@ std::string UnaryNode::toString() {
 	return result.str();
 }
 
+std::string UnaryNode::getType() {
+    return "UnaryNode";
+}
+
 }

@@ -11,6 +11,7 @@ class AssignmentNode : public ASTNode {
 public:
   AssignmentNode(SymbolNode *symbol, ASTNode *rhs);
   std::string toString();
+  std::string getType();
 };
 
 }

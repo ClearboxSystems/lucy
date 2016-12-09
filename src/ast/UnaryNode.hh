@@ -9,7 +9,8 @@ class UnaryNode : public ASTNode {
 
 public:
     UnaryNode(char opcode, ASTNode *operand);
-  	std::string toString();  
+    std::string toString();  
+    std::string getType();
 };
 
 }

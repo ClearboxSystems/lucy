@@ -15,4 +15,8 @@ std::string AssignmentNode::toString() {
 	return result.str();
 }
 
+std::string AssignmentNode::getType() {
+    return "AssignmentNode";
+}
+
 }

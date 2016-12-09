@@ -4,11 +4,14 @@
 namespace lucy {
 
 class NumberNode : public ASTNode {
-    int val;
 
 public:
-    NumberNode(int val);
-  	std::string toString();
+    NumberNode(long val);
+    std::string toString();
+    std::string getType();
+
+    long val;
+
 };
 
 }

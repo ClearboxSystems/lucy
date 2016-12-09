@@ -15,4 +15,8 @@ std::string BinaryNode::toString() {
 	return result.str();
 }
 
+std::string BinaryNode::getType() {
+    return "BinaryNode";
+}
+
 }

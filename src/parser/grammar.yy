@@ -49,15 +49,15 @@
 %token LIST_START LIST_END
 %token END 0
 
+%nonassoc ASSIGN
+%nonassoc EQUALS
+%left ADD SUBTRACT
+%left MULTIPLY DIVIDE
+
 %type <node> expr statement
 %type <symbol> symbol
 %type <assign> assignment
 %type <list> list
-
-%nonassoc ASSIGN
-%nonassoc EQUALS
-%left ADD SUB
-%left MUL DIV
 
 %%
 %start top;

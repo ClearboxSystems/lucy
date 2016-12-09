@@ -4,9 +4,10 @@
 namespace lucy {
 
 class Parser {
+    
 public:
-	int testLexer(int argc, char **argv);
-	void emitStatement(ASTNode *node);
+    int testLexer(int argc, char **argv);
+    void emitStatement(ASTNode *node);
 };
 
 }

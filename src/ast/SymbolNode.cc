@@ -8,4 +8,8 @@ std::string SymbolNode::toString() {
 	return name;
 }
 
+std::string SymbolNode::getType() {
+    return "SymbolNode";
+}
+
 }

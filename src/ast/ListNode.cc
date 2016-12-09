@@ -26,4 +26,8 @@ std::string ListNode::toString() {
 	return result.str();
 }
 
+std::string ListNode::getType() {
+    return "ListNode";
+}
+
 }

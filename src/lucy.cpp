@@ -21,9 +21,26 @@
 // }
 
 #include "parser/Parser.hh"
+#include "codegen/IRRenderer.hh"
+#include "ast.hh"
+
+#include <iostream>
+
+using namespace lucy;
+using namespace std;
+
+IRRenderer renderer;
+Parser parser;
+
+
+void processASTNode(ASTNode *node) {
+    llvm::Value *val = renderer.generateIR(node);
+    val->dump();
+}    
 
 int main(int argc, char **argv) {
-	lucy::Parser parser;
-	return parser.testLexer(argc, argv);
+
+    return parser.testLexer(argc, argv);
 }
+
 

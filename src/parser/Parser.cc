@@ -6,11 +6,16 @@
 #include <string>
 #include "Lexer.hh"
 
+extern void processASTNode(lucy::ASTNode *node);
+
 namespace lucy {
 using namespace std;
 
+
+
 void Parser::emitStatement(ASTNode *node) {
     cout << node->toString() << endl;
+    processASTNode(node);
     cout << "> ";
 }
 
@@ -30,7 +35,7 @@ void doLexing(Lexer &lexer) {
 }
 
 int Parser::testLexer(int argc, char **argv) {
-	string input;
+    string input;
     vector<string> files;
 
     bool debugLexer = false;
@@ -67,7 +72,7 @@ int Parser::testLexer(int argc, char **argv) {
             }
         }
     } else {
-        fprintf(stderr, "ready> ");
+        fprintf(stderr, "> ");
 //        while (std::getline(std::cin, input)) {
 //            std::istringstream iss(input);
             lexer.setInput(&std::cin);
