@@ -41,6 +41,7 @@ public:
     IRRenderer();
     ~IRRenderer();
 
+    LLVMContext context;
     unique_ptr<Module> module;
     unique_ptr<IRBuilder<> > builder;
 

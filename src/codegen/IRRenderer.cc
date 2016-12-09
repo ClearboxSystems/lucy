@@ -15,7 +15,10 @@ namespace lucy {
 
     
 IRRenderer::IRRenderer() 
-    : IRRenderer(unique_ptr<Module> (new Module("Lucy JIT", llvm::getGlobalContext()))) {}
+    : context{},
+      module(llvm::make_unique<Module>("Lucy JIT", context)),
+      builder(llvm::make_unique<IRBuilder<> >(module->getContext())) {}
+//    IRRenderer(unique_ptr<Module> ())) {}
 
 IRRenderer::IRRenderer(const IRRenderer& orig)
     : IRRenderer(llvm::CloneModule(orig.module.get())) {}
