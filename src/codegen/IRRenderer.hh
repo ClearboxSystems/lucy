@@ -7,6 +7,9 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Value.h"
+#include "llvm/IR/LegacyPassManager.h"
+
+#include "../../include/KaleidoscopeJIT.h"
 
 #include <map>
 #include <string>
@@ -22,12 +25,14 @@ using ::llvm::Function;
 using ::llvm::IRBuilder;
 using ::llvm::LLVMContext;
 using ::llvm::Module;
+using ::llvm::legacy::FunctionPassManager;
 
 namespace lucy {
     
 class IRRenderer {
 private:
     map<string, Value *> namedValues;
+    map<string, FunctionPrototype *> functionPrototypes;
 
     IRRenderer(const IRRenderer& orig);
     IRRenderer(unique_ptr<Module> module);
@@ -40,6 +45,13 @@ private:
     llvm::Value *generateIR(BinaryNode *node);
     llvm::Value *generateIR(CallNode *node);
     llvm::Function *generateIR(FunctionPrototype *proto);
+
+    unique_ptr<llvm::orc::KaleidoscopeJIT> jit;
+    unique_ptr<FunctionPassManager> fpm;
+
+    void initializeModuleAndPassManager();
+
+    llvm::Function *getFunction(std::string name);
 
 public:
     IRRenderer();
@@ -60,7 +72,8 @@ public:
     
     llvm::Value *generateIR(ASTNode *node);
     llvm::Function *generateIR(FunctionDef *definition);
-    llvm::Function *generateIRTopLevel(ASTNode *node);
+    void handleTopLevel(ASTNode *node);
+    void handleExtern(FunctionPrototype *node);
 };
 
 } // namespace lucy

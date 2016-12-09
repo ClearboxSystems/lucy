@@ -7,6 +7,11 @@
 #include "llvm/IR/Verifier.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 
+#include "llvm/Target/TargetMachine.h"
+#include "llvm/Analysis/Passes.h"
+#include "llvm/Transforms/Scalar.h"
+#include "llvm/Support/TargetSelect.h"
+
 #include <iostream>
 #include <vector>
 
@@ -22,8 +27,14 @@ namespace lucy {
 IRRenderer::IRRenderer() 
     : context{},
       module(llvm::make_unique<Module>("Lucy JIT", context)),
-      builder(llvm::make_unique<IRBuilder<> >(module->getContext())) {}
-//    IRRenderer(unique_ptr<Module> ())) {}
+      builder(llvm::make_unique<IRBuilder<> >(context)) {
+    
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
+    llvm::InitializeNativeTargetAsmParser();
+    jit = llvm::make_unique<llvm::orc::KaleidoscopeJIT>();
+    initializeModuleAndPassManager();
+}
 
 IRRenderer::IRRenderer(const IRRenderer& orig)
     : IRRenderer(llvm::CloneModule(orig.module.get())) {}
@@ -32,6 +43,12 @@ IRRenderer::IRRenderer(const IRRenderer& orig)
 IRRenderer::IRRenderer(unique_ptr<Module> module)
     : module(std::move(module)),
         builder(unique_ptr<IRBuilder<> >(new IRBuilder<>(this->module->getContext()))) {
+
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
+    llvm::InitializeNativeTargetAsmParser();
+    jit = llvm::make_unique<llvm::orc::KaleidoscopeJIT>();
+    initializeModuleAndPassManager();
     
 }
 
@@ -98,9 +115,7 @@ Value *IRRenderer::generateIR(BinaryNode* node) {
     
     if (!left || !right)
         return 0;
-    
-//    Type *llvmIntType = Type::getIntegerType(getLLVMContext());
-    
+        
     switch (node->opcode) {
         case '+': return builder->CreateAdd(left, right, "addtmp");
         case '-': return builder->CreateSub(left, right, "subtmp");
@@ -121,7 +136,7 @@ Value *IRRenderer::generateIR(SymbolNode *node) {
 
 Value *IRRenderer::generateIR(CallNode *node) {
     // Looking up function by name is a mistake!
-    Function *callF = module->getFunction(node->name);
+    Function *callF = getFunction(node->name);
     if (!callF) {
         std::cerr << "Unknown function: " << node->name << std::endl;
         return nullptr;
@@ -165,14 +180,9 @@ Function *IRRenderer::generateIR(FunctionPrototype *proto) {
 }
 
 Function *IRRenderer::generateIR(FunctionDef *def) {
-    // This is a bug, as function names may not be unique!
-    Function *func = module->getFunction(def->proto->name);
-
-    if (!func)
-        func = generateIR(def->proto);
-    else {
-        func->deleteBody();
-    }
+    FunctionPrototype *proto = def->proto;
+    functionPrototypes[proto->name] = proto;
+    Function *func = getFunction(proto->name);
 
     if (!func)
         return nullptr;
@@ -189,6 +199,11 @@ Function *IRRenderer::generateIR(FunctionDef *def) {
 
         verifyFunction(*func);
 
+        func->dump();
+
+        jit->addModule(std::move(module));
+        initializeModuleAndPassManager();
+
         return func;
     }
 
@@ -196,11 +211,59 @@ Function *IRRenderer::generateIR(FunctionDef *def) {
     return nullptr;
 }
 
-Function *IRRenderer::generateIRTopLevel(ASTNode *node) {
+void IRRenderer::handleTopLevel(ASTNode *node) {
     std::vector<std::string> args;
     auto proto = new FunctionPrototype("__anon_expr", args);
     auto func = new FunctionDef(proto, node);
-    return generateIR(func);
+    Function *ir = generateIR(func);
+
+    if (ir) {
+        auto H = jit->addModule(std::move(module));
+        initializeModuleAndPassManager();
+
+        auto topLevelSymbol = jit->findSymbol("__anon_expr");
+        assert(topLevelSymbol && "Function not found");
+
+        long (*fp)() = (long (*)())(intptr_t)topLevelSymbol.getAddress();
+        std::cout << "Evaluated to " << fp() << std::endl;
+
+        jit->removeModule(H);
+    }
 }
+
+void IRRenderer::handleExtern(FunctionPrototype *proto) {
+    Function *func = generateIR(proto);
+    if (func) {
+        functionPrototypes[proto->name] = proto;
+        func->dump();
+    }
+}
+
+void IRRenderer::initializeModuleAndPassManager() {
+    module = llvm::make_unique<Module>("Lucy JIT", context);
+    module->setDataLayout(jit->getTargetMachine().createDataLayout());
+
+    fpm = llvm::make_unique<llvm::legacy::FunctionPassManager>(module.get());
+
+    fpm->add(llvm::createInstructionCombiningPass());
+    fpm->add(llvm::createReassociatePass());
+    fpm->add(llvm::createGVNPass());
+    fpm->add(llvm::createCFGSimplificationPass());
+    fpm->doInitialization();
+
+}
+
+llvm::Function *IRRenderer::getFunction(std::string name) {
+    if (llvm::Function *func = module->getFunction(name))
+        return func;
+
+    auto fi = functionPrototypes.find(name);
+    if (fi != functionPrototypes.end())
+        return generateIR(fi->second);
+
+    return nullptr;
+}
+
+
 
 } // namespace lucy

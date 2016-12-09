@@ -73,6 +73,12 @@ public:
             if (repl) cout << "> ";
         }
         
+        void emitExtern(FunctionPrototype *proto) {
+            cout << "extern " << proto->toString() << endl;
+            callback.handleExtern(proto);
+            if (repl) cout << "> ";
+        }
+        
 private:    
     Parser &parent;
     IParserCallback &callback;
@@ -89,6 +95,7 @@ void Parser::parseFiles(std::vector<std::string> &files) { pImpl->parseFiles(fil
 void Parser::parseConsole() { pImpl->parseConsole(); }
 void Parser::emitStatement(ASTNode *node) { pImpl->emitStatement(node); }
 void Parser::emitDefinition(FunctionDef *definition) { pImpl->emitDefinition(definition); }
+void Parser::emitExtern(FunctionPrototype *proto) { pImpl->emitExtern(proto); }
 
 } // namespace lucy
 

@@ -27,7 +27,7 @@
 }
 
 %union {
-	int ival;
+	long ival;
 	std::string *string;
 	ASTNode *node;
 	SymbolNode *symbol;
@@ -51,7 +51,7 @@
 %token SEMICOLON
 %token OPEN_PAREN CLOSE_PAREN
 %token LIST_START LIST_END
-%token FUN
+%token FUN EXTERN
 %token END 0
 
 %nonassoc ASSIGN
@@ -79,6 +79,7 @@ statement :
     expr SEMICOLON { parser.emitStatement($1); }
   | assignment SEMICOLON { parser.emitStatement($1); }
   | definition SEMICOLON { parser.emitDefinition($1); }
+  | EXTERN prototype SEMICOLON {parser.emitExtern($2); }
   ;
 
 definition : FUN prototype ASSIGN expr {

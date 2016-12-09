@@ -17,13 +17,16 @@ public:
     Lucy() : parser(*(new Parser(*this))) {}
     
     void handleStatement(ASTNode *node) {
-        llvm::Value *val = renderer.generateIRTopLevel(node);
-        val->dump();        
+        renderer.handleTopLevel(node);        
     };
     
     void handleDefinition(FunctionDef *definition) {
         llvm::Function *fun = renderer.generateIR(definition);
-        fun->dump();
+//        fun->dump();
+    };
+    
+    void handleExtern(FunctionPrototype *proto) {
+        renderer.handleExtern(proto);
     };
     
     int main(int argc, char **argv) {
