@@ -28,9 +28,9 @@
 #include <string>
 #include <iostream>
 
-using namespace lucy;
+namespace lucy {
 using namespace std;
-
+    
 class Lucy : public IParserCallback {
     IRRenderer renderer;
     Parser &parser;
@@ -68,8 +68,10 @@ public:
     }
 };
 
+} // namespace lucy;
+
 int main(int argc, char **argv) {
-    Lucy lucy;    
+    lucy::Lucy lucy;    
     return lucy.main(argc, argv);
 }
 
