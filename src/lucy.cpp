@@ -24,23 +24,53 @@
 #include "codegen/IRRenderer.hh"
 #include "ast.hh"
 
+#include <vector>
+#include <string>
 #include <iostream>
 
 using namespace lucy;
 using namespace std;
 
-IRRenderer renderer;
-Parser parser;
+class Lucy : public IParserCallback {
+    IRRenderer renderer;
+    Parser &parser;
 
+public:
+    Lucy() : parser(*(new Parser(*this))) {}
+    
+    void handleStatement(ASTNode *node) {
+        llvm::Value *val = renderer.generateIR(node);
+        val->dump();        
+    };
+    
+    int main(int argc, char **argv) {
+        vector<string> files;
 
-void processASTNode(ASTNode *node) {
-    llvm::Value *val = renderer.generateIR(node);
-    val->dump();
-}    
+        bool debugLexer = false;
+        bool debugParser = false;
+        for (int i = 1; i < argc; ++i)
+            if (argv[i] == string ("-s"))
+                debugLexer = true;
+            else if (argv[i] == string ("-p"))
+                debugParser = true;
+            else if (argv[i][0] != '-')
+                files.push_back(argv[i]);
+
+        parser.setDebugLexer(debugLexer);
+        parser.setDebugParser(debugParser);
+
+        if (files.size() > 0) 
+            parser.parseFiles(files);
+        else
+            parser.parseConsole();
+
+        return 0;        
+    }
+};
 
 int main(int argc, char **argv) {
-
-    return parser.testLexer(argc, argv);
+    Lucy lucy;    
+    return lucy.main(argc, argv);
 }
 
 
