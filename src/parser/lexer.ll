@@ -23,6 +23,8 @@ typedef lucy::BisonParser::token token;
 [ \t\n]+			/* ignore whitespace */
 "//"[^\n]*	   		/* ignore comments */
 
+"fun"  return token::FUN;
+
 ":=" return token::ASSIGN;
 "+" return token::ADD;
 "-" return token::SUBTRACT;
@@ -41,7 +43,7 @@ typedef lucy::BisonParser::token token;
 	return token::INTEGER;
 }
 [a-zA-Z][a-zA-Z0-9]*    { 
-	yylval->string = yytext; 
+	yylval->string = new std::string(yytext); 
 	return token::IDENTIFIER;
 } 
 

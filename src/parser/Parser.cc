@@ -66,6 +66,12 @@ public:
             callback.handleStatement(node);
             if (repl) cout << "> ";
         }
+
+        void emitDefinition(FunctionDef *definition) {
+            cout << definition->toString() << endl;
+            callback.handleDefinition(definition);
+            if (repl) cout << "> ";
+        }
         
 private:    
     Parser &parent;
@@ -82,6 +88,7 @@ void Parser::setDebugParser(bool on) { pImpl->setDebugParser(on); }
 void Parser::parseFiles(std::vector<std::string> &files) { pImpl->parseFiles(files); }
 void Parser::parseConsole() { pImpl->parseConsole(); }
 void Parser::emitStatement(ASTNode *node) { pImpl->emitStatement(node); }
+void Parser::emitDefinition(FunctionDef *definition) { pImpl->emitDefinition(definition); }
 
 } // namespace lucy
 

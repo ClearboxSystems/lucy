@@ -28,11 +28,15 @@
 
 %union {
 	int ival;
-	char *string;
+	std::string *string;
 	ASTNode *node;
 	SymbolNode *symbol;
 	AssignmentNode *assign;
 	std::vector<ASTNode *> *list;
+	std::vector<std::string> *args;
+	FunctionPrototype *proto;
+	FunctionDef *func;
+	CallNode *call;
 }
 
 %define api.token.prefix {}
@@ -47,6 +51,7 @@
 %token SEMICOLON
 %token OPEN_PAREN CLOSE_PAREN
 %token LIST_START LIST_END
+%token FUN
 %token END 0
 
 %nonassoc ASSIGN
@@ -58,18 +63,41 @@
 %type <symbol> symbol
 %type <assign> assignment
 %type <list> list
+%type <args> args
+%type <proto> prototype
+%type <func> definition
+%type <call> call
 
 %%
 %start top;
 
 top :
-  | top statement { parser.emitStatement($2); }
+  | top statement {  }
  ;	
 
 statement :
-    expr SEMICOLON { $$ = $1; }
-  | assignment SEMICOLON { $$ = $1; }
+    expr SEMICOLON { parser.emitStatement($1); }
+  | assignment SEMICOLON { parser.emitStatement($1); }
+  | definition SEMICOLON { parser.emitDefinition($1); }
   ;
+
+definition : FUN prototype ASSIGN expr {
+	$$ = new FunctionDef($2, $4);	
+};
+
+call : IDENTIFIER OPEN_PAREN list CLOSE_PAREN {
+	$$ = new CallNode(*$1, *$3);
+};
+
+prototype : IDENTIFIER OPEN_PAREN args CLOSE_PAREN {
+	$$ = new FunctionPrototype(*$1, *$3);
+};
+
+args : { $$ = new std::vector<std::string>(); }
+ | IDENTIFIER { 	$$ = new std::vector<std::string>();
+ 					$$->push_back(*$1); }
+ | args COMMA IDENTIFIER { $$ = $1; $$->push_back(*$3); }
+ ;
 
 list :	{ $$ = new std::vector<ASTNode *>(); }
  | expr { 
@@ -80,9 +108,9 @@ list :	{ $$ = new std::vector<ASTNode *>(); }
  ;
 
 assignment : symbol ASSIGN expr { 
-						$$ = new AssignmentNode($1, $3); }
+						$$ = new AssignmentNode($1, $3); };
 
-symbol : IDENTIFIER				{ $$ = new SymbolNode($1); }
+symbol : IDENTIFIER				{ $$ = new SymbolNode(*$1); };
 
 expr :
     expr ADD expr 				{ $$ = new BinaryNode('+', $1, $3); }
@@ -94,6 +122,7 @@ expr :
   |	INTEGER						{ $$ = new NumberNode($1); }
   | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; }
   | LIST_START list LIST_END 	{ $$ = new ListNode($2); }
+  | call 						{ $$ = $1; }
   ;
 
 %%

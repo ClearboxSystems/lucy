@@ -17,6 +17,7 @@ using ::std::string;
 using ::std::unique_ptr;
 
 using ::llvm::AllocaInst;
+using ::llvm::Value;
 using ::llvm::Function;
 using ::llvm::IRBuilder;
 using ::llvm::LLVMContext;
@@ -26,7 +27,7 @@ namespace lucy {
     
 class IRRenderer {
 private:
-    map<string, AllocaInst *> namedValues;
+    map<string, Value *> namedValues;
 
     IRRenderer(const IRRenderer& orig);
     IRRenderer(unique_ptr<Module> module);
@@ -35,7 +36,10 @@ private:
     IRRenderer &operator =(IRRenderer other);
 
     llvm::Value *generateIR(NumberNode *node);
+    llvm::Value *generateIR(SymbolNode *node);
     llvm::Value *generateIR(BinaryNode *node);
+    llvm::Value *generateIR(CallNode *node);
+    llvm::Function *generateIR(FunctionPrototype *proto);
 
 public:
     IRRenderer();
@@ -47,14 +51,16 @@ public:
 
     LLVMContext &getLLVMContext();
     
-    AllocaInst *getNamedValue(const string &name);
-    void setNamedValue(const string &name, AllocaInst *value);
+    Value *getNamedValue(const string &name);
+    void setNamedValue(const string &name, Value *value);
     void clearNamedValue(const string &name);
     void clearAllNamedValues();
     
     AllocaInst *createEntryBlockAlloca(Function *func, const string &name);
     
     llvm::Value *generateIR(ASTNode *node);
+    llvm::Function *generateIR(FunctionDef *definition);
+    llvm::Function *generateIRTopLevel(ASTNode *node);
 };
 
 } // namespace lucy

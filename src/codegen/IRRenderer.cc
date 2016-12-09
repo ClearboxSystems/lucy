@@ -1,8 +1,10 @@
 #include "IRRenderer.hh"
 
+#include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Value.h"
+#include "llvm/IR/Verifier.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 
 #include <iostream>
@@ -10,6 +12,9 @@
 
 using ::llvm::Value;
 using ::llvm::Type;
+using ::llvm::BasicBlock;
+using ::llvm::Function;
+using ::llvm::FunctionType;
 
 namespace lucy {
 
@@ -53,11 +58,11 @@ LLVMContext &IRRenderer::getLLVMContext() {
     return module->getContext();
 }
 
-AllocaInst *IRRenderer::getNamedValue(const string& name) {
+Value *IRRenderer::getNamedValue(const string& name) {
     return namedValues[name];
 }
 
-void IRRenderer::setNamedValue(const string& name, AllocaInst* value) {
+void IRRenderer::setNamedValue(const string& name, Value* value) {
     namedValues[name] = value;
 }
 
@@ -77,6 +82,10 @@ Value *IRRenderer::generateIR(ASTNode *node) {
         return generateIR((BinaryNode *)node);
     else if (nodeType == "NumberNode")
         return generateIR((NumberNode *)node);
+    else if (nodeType == "SymbolNode")
+        return generateIR((SymbolNode *)node);
+    else if (nodeType == "CallNode")
+        return generateIR((CallNode *)node);
     
     
     std::cerr << "IR Generator not defined for node type: " << nodeType << std::endl;            
@@ -102,11 +111,96 @@ Value *IRRenderer::generateIR(BinaryNode* node) {
     }   
 }
 
-Value *IRRenderer::generateIR(NumberNode *node) {
-//    Type *llvmIntType = Type::getIntegerType(getLLVMContext());
+Value *IRRenderer::generateIR(SymbolNode *node) {
+    Value *v = getNamedValue(node->name);
+    if (!v)
+        std::cerr << "Unknown Variable: " << node->name << std::endl;
 
+    return v;
+}
+
+Value *IRRenderer::generateIR(CallNode *node) {
+    // Looking up function by name is a mistake!
+    Function *callF = module->getFunction(node->name);
+    if (!callF) {
+        std::cerr << "Unknown function: " << node->name << std::endl;
+        return nullptr;
+    }
+
+    if (callF->arg_size() != node->args.size()) {
+        std::cerr << "Incorrect # args in " << node->name;
+        std::cerr << ", expecting " << callF->arg_size(); 
+        std::cerr << " but got " << node->args.size() << std::endl;
+        return nullptr;        
+    }
+
+    std::vector<Value *> argsV;
+    for (unsigned i = 0, e = node->args.size(); i != e; ++i) {
+        argsV.push_back(generateIR(node->args[i]));
+        if (!argsV.back()) {
+            std::cerr << "Failed to generate argument: " << i << std::endl;
+            return nullptr;            
+        }
+    }
+
+    return builder->CreateCall(callF, argsV, "calltmp");
+}
+
+Value *IRRenderer::generateIR(NumberNode *node) {
     return llvm::ConstantInt::get(getLLVMContext(), llvm::APInt(64, node->val));
 }
 
+Function *IRRenderer::generateIR(FunctionPrototype *proto) {
+    std::vector<Type *> ints(proto->args.size(), Type::getInt64Ty(context));
+    FunctionType *FT = FunctionType::get(Type::getInt64Ty(context), ints, false);
+
+    Function *F = Function::Create(FT, Function::ExternalLinkage, proto->name, &(*module));
+
+    // Set names for all arguments.
+    unsigned idx = 0;
+    for (auto &arg : F->args())
+        arg.setName(proto->args[idx++]);
+
+    return F;
+}
+
+Function *IRRenderer::generateIR(FunctionDef *def) {
+    // This is a bug, as function names may not be unique!
+    Function *func = module->getFunction(def->proto->name);
+
+    if (!func)
+        func = generateIR(def->proto);
+    else {
+        func->deleteBody();
+    }
+
+    if (!func)
+        return nullptr;
+
+    BasicBlock *BB = BasicBlock::Create(context, "entry", func);
+    builder->SetInsertPoint(BB);
+
+    clearAllNamedValues();
+    for (auto &arg : func->args())
+        setNamedValue(arg.getName(), &arg);
+
+    if (Value *retVal = generateIR(def->body)) {
+        builder->CreateRet(retVal);
+
+        verifyFunction(*func);
+
+        return func;
+    }
+
+    func->eraseFromParent();
+    return nullptr;
+}
+
+Function *IRRenderer::generateIRTopLevel(ASTNode *node) {
+    std::vector<std::string> args;
+    auto proto = new FunctionPrototype("__anon_expr", args);
+    auto func = new FunctionDef(proto, node);
+    return generateIR(func);
+}
 
 } // namespace lucy

@@ -8,6 +8,7 @@ namespace lucy {
 class IParserCallback {
 public:
     virtual void handleStatement(ASTNode *node) = 0;
+    virtual void handleDefinition(FunctionDef *definition) = 0;
     virtual ~IParserCallback(){}
 };    
     
@@ -23,6 +24,7 @@ public:
     void parseConsole();
     
     void emitStatement(ASTNode *node);    
+    void emitDefinition(FunctionDef *definition);    
 private:
     ParserImpl *pImpl;
 };
