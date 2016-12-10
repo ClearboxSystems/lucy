@@ -33,6 +33,7 @@ class IRRenderer {
 private:
     map<string, Value *> namedValues;
     map<string, FunctionPrototype *> functionPrototypes;
+    map<string, Value *> globalVariables;
 
     IRRenderer(const IRRenderer& orig);
     IRRenderer(unique_ptr<Module> module);

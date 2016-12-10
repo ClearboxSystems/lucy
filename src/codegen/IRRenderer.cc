@@ -128,6 +128,10 @@ Value *IRRenderer::generateIR(BinaryNode* node) {
 
 Value *IRRenderer::generateIR(SymbolNode *node) {
     Value *v = getNamedValue(node->name);
+    
+    if (!v)
+        v = globalVariables[node->name];
+
     if (!v)
         std::cerr << "Unknown Variable: " << node->name << std::endl;
 
@@ -212,6 +216,12 @@ Function *IRRenderer::generateIR(FunctionDef *def) {
 }
 
 void IRRenderer::handleTopLevel(ASTNode *node) {
+    std::string assignName;
+    if (node->getType() == "AssignmentNode") {
+        assignName = ((AssignmentNode *)node)->symbol->name;
+        node = ((AssignmentNode *)node)->rhs;
+    }
+
     std::vector<std::string> args;
     auto proto = new FunctionPrototype("__anon_expr", args);
     auto func = new FunctionDef(proto, node);
@@ -225,7 +235,11 @@ void IRRenderer::handleTopLevel(ASTNode *node) {
         assert(topLevelSymbol && "Function not found");
 
         long (*fp)() = (long (*)())(intptr_t)topLevelSymbol.getAddress();
-        std::cout << "Evaluated to " << fp() << std::endl;
+        int val = fp();
+        std::cout << "Evaluated to " << val << std::endl;
+
+        if (assignName.size() > 0)
+            globalVariables[assignName] = llvm::ConstantInt::get(getLLVMContext(), llvm::APInt(64, val));
 
         jit->removeModule(H);
     }

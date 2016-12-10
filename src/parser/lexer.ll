@@ -39,7 +39,7 @@ typedef lucy::BisonParser::token token;
 ","         return token::COMMA;
 ";"         return token::SEMICOLON;
 
-[\-]?[0-9]+ {
+[0-9]+ {
     yylval->ival = atol(yytext);
     return token::INTEGER;
 }
