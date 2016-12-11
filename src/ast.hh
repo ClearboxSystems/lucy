@@ -1,7 +1,8 @@
 #pragma once
 
 #include "ast/ASTNode.hh"
-#include "ast/NumberNode.hh"
+#include "ast/IntegerNode.hh"
+#include "ast/FloatNode.hh"
 #include "ast/SymbolNode.hh"
 #include "ast/AssignmentNode.hh"
 #include "ast/UnaryNode.hh"

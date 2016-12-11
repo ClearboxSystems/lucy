@@ -15,8 +15,17 @@ std::string AssignmentNode::toString() {
 	return result.str();
 }
 
-std::string AssignmentNode::getType() {
-    return "AssignmentNode";
+bool AssignmentNode::typeCheck() {
+	if (rhs->getLucyType() == undefined)
+		if (!rhs->typeCheck())
+			return false;
+
+	if (symbol->lucyType == undefined) {
+		symbol->lucyType = rhs->getLucyType();	
+		return true;
+	}
+
+	return symbol->lucyType == rhs->getLucyType();
 }
 
 }

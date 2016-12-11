@@ -11,7 +11,7 @@ class CallNode : public ASTNode {
 public:
   CallNode(const std::string &name, std::vector<ASTNode *> &args);
   std::string toString();
-  std::string getType();
+  std::string getNodeType() { return "CallNode"; }
 
   std::string name;
   std::vector<ASTNode *> args;  

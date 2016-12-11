@@ -1,10 +1,6 @@
-add_subdirectory(test)
-
 add_subdirectory(parser)
 add_subdirectory(ast)
 add_subdirectory(codegen)
-
-
 
 #message (STATUS "LLVM_FOUND: " ${LLVM_FOUND})
 #message (STATUS "LLVM_CXXFLAGS: " ${LLVM_CXXFLAGS})

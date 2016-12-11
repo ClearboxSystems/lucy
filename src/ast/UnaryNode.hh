@@ -4,13 +4,19 @@
 namespace lucy {
 
 class UnaryNode : public ASTNode {
-    char opcode;
-    ASTNode *operand;
-
 public:
     UnaryNode(char opcode, ASTNode *operand);
     std::string toString();  
-    std::string getType();
+    std::string getNodeType() { return "UnaryNode"; }
+
+    PrimitiveType getLucyType() { return lucyType; }
+  	bool typeCheck();
+
+  	PrimitiveType lucyType;
+
+  	char opcode;
+    ASTNode *operand;
+
 };
 
 }

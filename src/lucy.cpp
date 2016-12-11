@@ -17,7 +17,11 @@ public:
     Lucy() : parser(*(new Parser(*this))) {}
     
     void handleStatement(ASTNode *node) {
-        renderer.handleTopLevel(node);        
+        if (node->typeCheck()) {
+            renderer.handleTopLevel(node);
+        } else {
+            cerr << "Typecheck Failed!" << endl;            
+        }
     };
     
     void handleDefinition(FunctionDef *definition) {

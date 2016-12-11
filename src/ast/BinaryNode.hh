@@ -8,11 +8,15 @@ class BinaryNode : public ASTNode {
 public:
   BinaryNode(char opcode, ASTNode *lhs, ASTNode *rhs);
   std::string toString();
-  std::string getType();
+  std::string getNodeType() { return "BinaryNode"; }
+  
+  PrimitiveType getLucyType() { return lucyType; }
+  bool typeCheck();
 
   char opcode;
   ASTNode *lhs, *rhs;
 
+  PrimitiveType lucyType;
 };
 
 }

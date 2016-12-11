@@ -27,8 +27,4 @@ std::string FunctionPrototype::toString() {
 	return result.str();
 }
 
-std::string FunctionPrototype::getType() {
-    return "FunctionPrototype";
-}
-
 } // namespace lucy

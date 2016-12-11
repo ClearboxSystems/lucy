@@ -17,8 +17,4 @@ std::string FunctionDef::toString() {
 	return result.str();
 }
 
-std::string FunctionDef::getType() {
-    return "FunctionDef";
-}
-
 } // namespace lucy

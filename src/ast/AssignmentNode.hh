@@ -8,8 +8,9 @@ class AssignmentNode : public ASTNode {
 public:
   AssignmentNode(SymbolNode *symbol, ASTNode *rhs);
   std::string toString();
-  std::string getType();
-
+  std::string getNodeType() { return "AssignmentNode"; }
+  bool typeCheck();
+  
   SymbolNode *symbol;
   ASTNode *rhs;
 

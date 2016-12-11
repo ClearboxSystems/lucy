@@ -41,7 +41,8 @@ private:
     
     IRRenderer &operator =(IRRenderer other);
 
-    llvm::Value *generateIR(NumberNode *node);
+    llvm::Value *generateIR(IntegerNode *node);
+    llvm::Value *generateIR(FloatNode *node);
     llvm::Value *generateIR(SymbolNode *node);
     llvm::Value *generateIR(BinaryNode *node);
     llvm::Value *generateIR(CallNode *node);

@@ -39,11 +39,37 @@ typedef lucy::BisonParser::token token;
 ","         return token::COMMA;
 ";"         return token::SEMICOLON;
 
-[0-9]+ {
-    yylval->ival = atol(yytext);
+0x[0-9a-fA-F_]+ {
+    yylval->ival = strtol(yytext, nullptr, 16);
     return token::INTEGER;
 }
-[a-zA-Z][a-zA-Z0-9]*    { 
+
+0o[0-7_]+ {
+    yylval->ival = strtol(yytext, nullptr, 8);
+    return token::INTEGER;
+}
+
+0b[01_]+ {
+    yylval->ival = strtol(yytext, nullptr, 2);
+    return token::INTEGER;
+}
+
+[0-9][0-9_]* {
+    yylval->ival = strtol(yytext, nullptr, 10);
+    return token::INTEGER;
+}
+
+[0-9][0-9_]*\.[0-9_]*([eE][-\+]?[0-9_]+)? {
+	yylval->fval = strtod(yytext, nullptr);
+	return token::FLOAT;	
+}
+
+[0-9][0-9_]*(\.[0-9_]*)?[eE][-\+]?[0-9_]+ {
+	yylval->fval = strtod(yytext, nullptr);
+	return token::FLOAT;	
+}
+
+[a-zA-Z_][a-zA-Z0-9_]*    { 
     yylval->string = new std::string(yytext); 
     return token::IDENTIFIER;
 } 

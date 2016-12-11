@@ -93,12 +93,14 @@ void IRRenderer::clearAllNamedValues() {
 
 Value *IRRenderer::generateIR(ASTNode *node) {
 
-    std::string nodeType = node->getType();
+    std::string nodeType = node->getNodeType();
     
     if (nodeType == "BinaryNode")
         return generateIR((BinaryNode *)node);
-    else if (nodeType == "NumberNode")
-        return generateIR((NumberNode *)node);
+    else if (nodeType == "IntegerNode")
+        return generateIR((IntegerNode *)node);
+    else if (nodeType == "FloatNode")
+        return generateIR((FloatNode *)node);
     else if (nodeType == "SymbolNode")
         return generateIR((SymbolNode *)node);
     else if (nodeType == "CallNode")
@@ -115,15 +117,30 @@ Value *IRRenderer::generateIR(BinaryNode* node) {
     
     if (!left || !right)
         return 0;
-        
-    switch (node->opcode) {
-        case '+': return builder->CreateAdd(left, right, "addtmp");
-        case '-': return builder->CreateSub(left, right, "subtmp");
-        case '*': return builder->CreateMul(left, right, "multmp");
-        default : 
-            std::cerr << "Unknown Binary Operator: " << node->opcode << std::endl;
-            return 0;
-    }   
+
+    PrimitiveType lucyType = node->getLucyType();
+    if (lucyType == Integer) {
+        switch (node->opcode) {
+            case '+': return builder->CreateAdd(left, right, "addtmp");
+            case '-': return builder->CreateSub(left, right, "subtmp");
+            case '*': return builder->CreateMul(left, right, "multmp");
+            default : 
+                std::cerr << "Unknown Binary Operator: " << node->opcode << std::endl;
+                return 0;
+        }   
+    } else if (lucyType == Float) {
+        switch (node->opcode) {
+            case '+': return builder->CreateFAdd(left, right, "addtmp");
+            case '-': return builder->CreateFSub(left, right, "subtmp");
+            case '*': return builder->CreateFMul(left, right, "multmp");
+            default : 
+                std::cerr << "Unknown Binary Operator: " << node->opcode << std::endl;
+                return 0;
+        }           
+    }
+
+    std::cerr << "Unknown Type" << std::endl;
+    return 0;
 }
 
 Value *IRRenderer::generateIR(SymbolNode *node) {
@@ -165,8 +182,12 @@ Value *IRRenderer::generateIR(CallNode *node) {
     return builder->CreateCall(callF, argsV, "calltmp");
 }
 
-Value *IRRenderer::generateIR(NumberNode *node) {
+Value *IRRenderer::generateIR(IntegerNode *node) {
     return llvm::ConstantInt::get(getLLVMContext(), llvm::APInt(64, node->val));
+}
+
+Value *IRRenderer::generateIR(FloatNode *node) {
+    return llvm::ConstantFP::get(getLLVMContext(), llvm::APFloat(node->val));
 }
 
 Function *IRRenderer::generateIR(FunctionPrototype *proto) {
@@ -217,7 +238,7 @@ Function *IRRenderer::generateIR(FunctionDef *def) {
 
 void IRRenderer::handleTopLevel(ASTNode *node) {
     std::string assignName;
-    if (node->getType() == "AssignmentNode") {
+    if (node->getNodeType() == "AssignmentNode") {
         assignName = ((AssignmentNode *)node)->symbol->name;
         node = ((AssignmentNode *)node)->rhs;
     }
@@ -227,6 +248,7 @@ void IRRenderer::handleTopLevel(ASTNode *node) {
     auto func = new FunctionDef(proto, node);
     Function *ir = generateIR(func);
 
+    PrimitiveType lucyType = node->getLucyType();
     if (ir) {
         auto H = jit->addModule(std::move(module));
         initializeModuleAndPassManager();
@@ -234,12 +256,19 @@ void IRRenderer::handleTopLevel(ASTNode *node) {
         auto topLevelSymbol = jit->findSymbol("__anon_expr");
         assert(topLevelSymbol && "Function not found");
 
-        long (*fp)() = (long (*)())(intptr_t)topLevelSymbol.getAddress();
-        int val = fp();
-        std::cout << "Evaluated to " << val << std::endl;
-
-        if (assignName.size() > 0)
-            globalVariables[assignName] = llvm::ConstantInt::get(getLLVMContext(), llvm::APInt(64, val));
+        if (lucyType == Integer) {
+            long (*fp)() = (long (*)())(intptr_t)topLevelSymbol.getAddress();
+            long val = fp();
+            std::cout << "Evaluated to " << val << std::endl;
+            if (assignName.size() > 0)
+                globalVariables[assignName] = llvm::ConstantInt::get(getLLVMContext(), llvm::APInt(64, val));
+        } else {
+            double (*fp)() = (double (*)())(intptr_t)topLevelSymbol.getAddress();
+            double val = fp();
+            std::cout << "Evaluated to " << val << std::endl;            
+            if (assignName.size() > 0)
+                globalVariables[assignName] = llvm::ConstantFP::get(getLLVMContext(), llvm::APFloat(val));
+        }
 
         jit->removeModule(H);
     }

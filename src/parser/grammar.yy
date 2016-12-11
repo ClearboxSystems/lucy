@@ -28,6 +28,7 @@
 
 %union {
 	long ival;
+	double fval;
 	std::string *string;
 	ASTNode *node;
 	SymbolNode *symbol;
@@ -42,6 +43,7 @@
 %define api.token.prefix {}
 
 %token <ival> INTEGER
+%token <fval> FLOAT
 %token <string> IDENTIFIER
 %token ASSIGN
 %token ADD SUBTRACT
@@ -120,7 +122,8 @@ expr :
   | expr DIVIDE expr 			{ $$ = new BinaryNode('/', $1, $3); }
   | expr EQUALS expr 			{ $$ = new BinaryNode('=', $1, $3); }
   | symbol 						{ $$ = $1; }
-  |	INTEGER						{ $$ = new NumberNode($1); }
+  |	INTEGER						{ $$ = new IntegerNode($1); }
+  |	FLOAT						{ $$ = new FloatNode($1); }
   | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; }
   | LIST_START list LIST_END 	{ $$ = new ListNode($2); }
   | call 						{ $$ = $1; }

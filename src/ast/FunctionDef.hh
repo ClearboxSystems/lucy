@@ -9,7 +9,7 @@ class FunctionDef {
 public:
     FunctionDef(FunctionPrototype *proto, ASTNode *body);
     std::string toString();
-    std::string getType();
+    std::string getNodeType() { return "FunctionDef"; }
 
     FunctionPrototype *proto;
     ASTNode *body;

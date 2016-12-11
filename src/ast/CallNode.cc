@@ -27,8 +27,4 @@ std::string CallNode::toString() {
 	return result.str();
 }
 
-std::string CallNode::getType() {
-    return "CallNode";
-}
-
 } // namespace lucy

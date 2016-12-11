@@ -2,14 +2,15 @@
 
 namespace lucy {
 
-SymbolNode::SymbolNode(const std::string &name) : name(name) {}
+SymbolNode::SymbolNode(const std::string &name, PrimitiveType lucyType) 
+				: name(name), lucyType(lucyType) {}
 
 std::string SymbolNode::toString() {
-	return name;
+	return name + " : " + lucyTypeToString(lucyType);
 }
 
-std::string SymbolNode::getType() {
-    return "SymbolNode";
+PrimitiveType SymbolNode::getLucyType() {
+    return lucyType;
 }
 
 }
