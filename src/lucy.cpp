@@ -25,8 +25,7 @@ public:
     };
     
     void handleDefinition(FunctionDef *definition) {
-        llvm::Function *fun = renderer.generateIR(definition);
-//        fun->dump();
+        renderer.generateIR(definition);
     };
     
     void handleExtern(FunctionPrototype *proto) {
