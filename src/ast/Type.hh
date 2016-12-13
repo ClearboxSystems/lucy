@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace lucy {
 
 enum PrimitiveType {
@@ -8,22 +10,23 @@ enum PrimitiveType {
     Float
 };
 
-//struct TupleType {
-//    int size;
-//    struct LucyType args[];
-//};
-//
-//struct FunctionType {
-//    LucyType args;
-//    LucyType result;
-//};
-//
-//union LucyType {
-//    PrimitiveType value;
-//    TupleType tuple;
-//    FunctionType func;
-//    std::string alias;
-//};
+struct LucyType {
+    enum {Primitive, Tuple, Function, Alias} type;
+    union {
+        PrimitiveType primitive;
+        std::vector<struct LucyType *> tuple;
+        std::pair<struct LucyType *, struct LucyType *> funcion;
+        std::string alias;
+    };
+};
+
+class TypeChecker {
+public:
+    TypeChecker()  {}
+
+
+};
+
 //
 //std::map<std::string, LucyType *> typeTable;
 //
