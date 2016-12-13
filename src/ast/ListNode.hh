@@ -10,7 +10,6 @@ public:
     ListNode(std::vector<ASTNode *> *list);
     std::string toString();
     std::string getNodeType() { return "ListNode" ;}
-    PrimitiveType getLucyType() { return undefined; }
 };
 
 }

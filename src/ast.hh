@@ -11,3 +11,4 @@
 #include "ast/FunctionPrototype.hh"
 #include "ast/FunctionDef.hh"
 #include "ast/CallNode.hh"
+#include "ast/CastNode.hh"

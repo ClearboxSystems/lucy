@@ -46,6 +46,7 @@ private:
     llvm::Value *generateIR(SymbolNode *node);
     llvm::Value *generateIR(BinaryNode *node);
     llvm::Value *generateIR(CallNode *node);
+    llvm::Value *generateIR(CastNode *node);
     llvm::Function *generateIR(FunctionPrototype *proto);
 
     unique_ptr<llvm::orc::KaleidoscopeJIT> jit;

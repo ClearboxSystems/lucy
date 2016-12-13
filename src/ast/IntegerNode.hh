@@ -9,10 +9,8 @@ public:
     IntegerNode(long val);
     std::string toString();
     std::string getNodeType() { return "IntegerNode"; }
-    PrimitiveType getLucyType() { return Integer; }
 
     long val;
-
 };
 
 }

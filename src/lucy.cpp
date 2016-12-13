@@ -1,6 +1,7 @@
 #include "parser/Parser.hh"
 #include "codegen/IRRenderer.hh"
 #include "ast.hh"
+#include "ast/Type.hh"
 
 #include <vector>
 #include <string>
@@ -12,12 +13,14 @@ using namespace std;
 class Lucy : public IParserCallback {
     IRRenderer renderer;
     Parser &parser;
-
+    TypeChecker typeChecker;
+    
 public:
     Lucy() : parser(*(new Parser(*this))) {}
     
     void handleStatement(ASTNode *node) {
-        if (node->typeCheck()) {
+        if (typeChecker.typeCheckAST(node)) {
+            cout << node->toString() << endl;
             renderer.handleTopLevel(node);
         } else {
             cerr << "Typecheck Failed!" << endl;            

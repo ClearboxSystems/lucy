@@ -1,30 +1,40 @@
 #pragma once
 
 #include <vector>
+#include <string>
+#include "../ast.hh"
 
 namespace lucy {
 
-enum PrimitiveType {
-    undefined,
-    Integer,
-    Float
-};
-
 struct LucyType {
+    LucyType() {}
     enum {Primitive, Tuple, Function, Alias} type;
     union {
         PrimitiveType primitive;
         std::vector<struct LucyType *> tuple;
-        std::pair<struct LucyType *, struct LucyType *> funcion;
+        std::pair<struct LucyType *, struct LucyType *> function;
         std::string alias;
     };
+    
+    static struct LucyType *getPrimitive(PrimitiveType prim) {
+        if (prim == undefined) return nullptr;
+        
+        struct LucyType *lt = new (struct LucyType);
+        lt->type = Primitive;
+        lt->primitive = prim;
+        return lt;
+    }
 };
 
 class TypeChecker {
+    bool typeCheckAST(AssignmentNode* node);
+    bool typeCheckAST(BinaryNode* node);
+    bool typeCheckAST(CastNode* node);
+
 public:
     TypeChecker()  {}
 
-
+    bool typeCheckAST(ASTNode *node);
 };
 
 //

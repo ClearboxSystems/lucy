@@ -25,6 +25,9 @@ typedef lucy::BisonParser::token token;
 
 "fun"       return token::FUN;
 "extern"    return token::EXTERN;
+"int"       return token::PRIM_INT;
+"float"     return token::PRIM_FLOAT;
+
 
 ":="        return token::ASSIGN;
 "+"         return token::ADD;
@@ -38,6 +41,7 @@ typedef lucy::BisonParser::token token;
 "]"         return token::LIST_END;
 ","         return token::COMMA;
 ";"         return token::SEMICOLON;
+":"         return token::COLON;
 
 0x[0-9a-fA-F_]+ {
     yylval->ival = strtol(yytext, nullptr, 16);

@@ -12,6 +12,7 @@
 
 %code requires {
 	#include "../ast.hh"
+        #include "../ast/Type.hh"
 	#include "Parser.hh"
 
 	namespace lucy {
@@ -27,17 +28,18 @@
 }
 
 %union {
-	long ival;
-	double fval;
-	std::string *string;
-	ASTNode *node;
-	SymbolNode *symbol;
-	AssignmentNode *assign;
-	std::vector<ASTNode *> *list;
-	std::vector<std::string> *args;
-	FunctionPrototype *proto;
-	FunctionDef *func;
-	CallNode *call;
+    long ival;
+    double fval;
+    std::string *string;
+    ASTNode *node;
+    SymbolNode *symbol;
+    AssignmentNode *assign;
+    std::vector<ASTNode *> *list;
+    std::vector<std::string> *args;
+    FunctionPrototype *proto;
+    FunctionDef *func;
+    CallNode *call;
+    PrimitiveType prim;
 }
 
 %define api.token.prefix {}
@@ -51,9 +53,11 @@
 %token EQUALS
 %token COMMA
 %token SEMICOLON
+%token COLON
 %token OPEN_PAREN CLOSE_PAREN
 %token LIST_START LIST_END
 %token FUN EXTERN
+%token PRIM_INT PRIM_FLOAT
 %token END 0
 
 %nonassoc ASSIGN
@@ -69,6 +73,7 @@
 %type <proto> prototype
 %type <func> definition
 %type <call> call
+%type <prim> prim_type cast
 
 %%
 %start top;
@@ -110,10 +115,18 @@ list :	{ $$ = new std::vector<ASTNode *>(); }
  | list COMMA expr { $$ = $1; $$->push_back($3); }
  ;
 
+cast : OPEN_PAREN prim_type CLOSE_PAREN { $$ = $2; };
+
 assignment : symbol ASSIGN expr { 
 						$$ = new AssignmentNode($1, $3); };
 
-symbol : IDENTIFIER				{ $$ = new SymbolNode(*$1); };
+symbol : IDENTIFIER			{ $$ = new SymbolNode(*$1); }
+ | IDENTIFIER COLON prim_type           { $$ = new SymbolNode(*$1, $3); }
+ ;
+
+prim_type :  PRIM_INT       { $$ = Integer; }
+ | PRIM_FLOAT               { $$ = Float; }
+ ;
 
 expr :
     expr ADD expr 				{ $$ = new BinaryNode('+', $1, $3); }
@@ -127,6 +140,7 @@ expr :
   | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; }
   | LIST_START list LIST_END 	{ $$ = new ListNode($2); }
   | call 						{ $$ = $1; }
+  | cast expr                   { $$ = new CastNode($2, LucyType::getPrimitive($1)); }
   ;
 
 %%

@@ -12,6 +12,8 @@
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Support/TargetSelect.h"
 
+#include "../ast/Type.hh"
+
 #include <iostream>
 #include <vector>
 
@@ -105,7 +107,8 @@ Value *IRRenderer::generateIR(ASTNode *node) {
         return generateIR((SymbolNode *)node);
     else if (nodeType == "CallNode")
         return generateIR((CallNode *)node);
-    
+    else if (nodeType == "CastNode")
+        return generateIR((CastNode *)node);
     
     std::cerr << "IR Generator not defined for node type: " << nodeType << std::endl;            
     return nullptr;            
@@ -118,8 +121,8 @@ Value *IRRenderer::generateIR(BinaryNode* node) {
     if (!left || !right)
         return 0;
 
-    PrimitiveType lucyType = node->getLucyType();
-    if (lucyType == Integer) {
+    LucyType *lucyType = node->getLucyType();
+    if (lucyType->type == LucyType::Primitive && lucyType->primitive == Integer) {
         switch (node->opcode) {
             case '+': return builder->CreateAdd(left, right, "addtmp");
             case '-': return builder->CreateSub(left, right, "subtmp");
@@ -128,7 +131,7 @@ Value *IRRenderer::generateIR(BinaryNode* node) {
                 std::cerr << "Unknown Binary Operator: " << node->opcode << std::endl;
                 return 0;
         }   
-    } else if (lucyType == Float) {
+    } else if (lucyType->type == LucyType::Primitive && lucyType->primitive == Float) {
         switch (node->opcode) {
             case '+': return builder->CreateFAdd(left, right, "addtmp");
             case '-': return builder->CreateFSub(left, right, "subtmp");
@@ -153,6 +156,25 @@ Value *IRRenderer::generateIR(SymbolNode *node) {
         std::cerr << "Unknown Variable: " << node->name << std::endl;
 
     return v;
+}
+
+Value *IRRenderer::generateIR(CastNode *node) {
+    Value *right = generateIR(node->node);
+    if (!right) return 0;
+
+    if (node->lucyType->type == LucyType::Primitive && node->node->lucyType->type == LucyType::Primitive) {
+        if (node->lucyType->primitive == Float && node->node->lucyType->primitive == Integer) {
+            Type *doubleType = Type::getDoubleTy(context);
+            return builder->CreateSIToFP(right, doubleType, "casttmp");
+        } else if (node->lucyType->primitive == Float && node->node->lucyType->primitive == Integer) {
+            std::cerr << "Warning: Loss of precision on cast!" << std::endl;
+            Type *intType = Type::getInt64Ty(context);
+            return builder->CreateFPToSI(right, intType, "casttmp");            
+        }
+        std::cerr << "Failed to cast as unexpected types!" << std::endl;
+    }
+    std::cerr << "Failed to cast as both types must be primitive!" << std::endl;
+    return 0;
 }
 
 Value *IRRenderer::generateIR(CallNode *node) {
@@ -248,7 +270,7 @@ void IRRenderer::handleTopLevel(ASTNode *node) {
     auto func = new FunctionDef(proto, node);
     Function *ir = generateIR(func);
 
-    PrimitiveType lucyType = node->getLucyType();
+    LucyType *lucyType = node->getLucyType();
     if (ir) {
         auto H = jit->addModule(std::move(module));
         initializeModuleAndPassManager();
@@ -256,13 +278,13 @@ void IRRenderer::handleTopLevel(ASTNode *node) {
         auto topLevelSymbol = jit->findSymbol("__anon_expr");
         assert(topLevelSymbol && "Function not found");
 
-        if (lucyType == Integer) {
+        if (lucyType->type == LucyType::Primitive && lucyType->primitive == Integer) {
             long (*fp)() = (long (*)())(intptr_t)topLevelSymbol.getAddress();
             long val = fp();
             std::cout << "Evaluated to " << val << std::endl;
             if (assignName.size() > 0)
                 globalVariables[assignName] = llvm::ConstantInt::get(getLLVMContext(), llvm::APInt(64, val));
-        } else {
+        } else if (lucyType->type == LucyType::Primitive && lucyType->primitive == Float) {
             double (*fp)() = (double (*)())(intptr_t)topLevelSymbol.getAddress();
             double val = fp();
             std::cout << "Evaluated to " << val << std::endl;            

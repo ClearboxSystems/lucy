@@ -9,12 +9,10 @@ public:
     std::string toString();  
     std::string getNodeType() { return "UnaryNode"; }
 
-    PrimitiveType getLucyType() { return lucyType; }
-  	bool typeCheck();
+    bool typeCheck();
 
-  	PrimitiveType lucyType;
 
-  	char opcode;
+    char opcode;
     ASTNode *operand;
 
 };

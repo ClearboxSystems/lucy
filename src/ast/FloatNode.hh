@@ -10,10 +10,7 @@ public:
     std::string toString();
     std::string getNodeType() {return "FloatNode"; }
 
-    PrimitiveType getLucyType() { return Float; }
-
     double val;
-
 };
 
 }

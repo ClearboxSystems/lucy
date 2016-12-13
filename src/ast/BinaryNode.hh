@@ -10,13 +10,11 @@ public:
   std::string toString();
   std::string getNodeType() { return "BinaryNode"; }
   
-  PrimitiveType getLucyType() { return lucyType; }
   bool typeCheck();
 
   char opcode;
   ASTNode *lhs, *rhs;
 
-  PrimitiveType lucyType;
 };
 
 }

@@ -1,16 +1,13 @@
 #include "SymbolNode.hh"
+#include "Type.hh"
 
 namespace lucy {
 
-SymbolNode::SymbolNode(const std::string &name, PrimitiveType lucyType) 
-				: name(name), lucyType(lucyType) {}
+SymbolNode::SymbolNode(const std::string &name, PrimitiveType primType) 
+                : ASTNode(LucyType::getPrimitive(primType)), name(name) {}
 
 std::string SymbolNode::toString() {
-	return name + " : " + lucyTypeToString(lucyType);
-}
-
-PrimitiveType SymbolNode::getLucyType() {
-    return lucyType;
+    return name + " : " + lucyTypeToString(lucyType);
 }
 
 }
