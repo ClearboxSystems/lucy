@@ -166,14 +166,15 @@ Value *IRRenderer::generateIR(CastNode *node) {
         if (node->lucyType->primitive == Float && node->node->lucyType->primitive == Integer) {
             Type *doubleType = Type::getDoubleTy(context);
             return builder->CreateSIToFP(right, doubleType, "casttmp");
-        } else if (node->lucyType->primitive == Float && node->node->lucyType->primitive == Integer) {
+        } else if (node->lucyType->primitive == Integer && node->node->lucyType->primitive == Float) {
             std::cerr << "Warning: Loss of precision on cast!" << std::endl;
             Type *intType = Type::getInt64Ty(context);
             return builder->CreateFPToSI(right, intType, "casttmp");            
         }
-        std::cerr << "Failed to cast as unexpected types!" << std::endl;
+        std::cerr << "Failed to cast as unexpected types!" << node->lucyType->primitive << " rhs = " << node->node->lucyType->primitive << std::endl;
+        return 0;
     }
-    std::cerr << "Failed to cast as both types must be primitive!" << std::endl;
+    std::cerr << "Failed to cast as both types must be primitive! lhs = " << std::endl;
     return 0;
 }
 

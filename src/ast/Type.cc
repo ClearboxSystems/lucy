@@ -18,25 +18,31 @@ bool TypeChecker::typeCheckAST(ASTNode *node) {
 
 bool TypeChecker::typeCheckAST(AssignmentNode* node) {
     bool result = typeCheckAST(node->rhs);
-    if (!result)
+    if (!result) {
+        std::cout << "Returning false" << std::endl;
         return result;
+    }
 
     if (node->symbol->lucyType == nullptr) {
         node->symbol->lucyType = node->rhs->lucyType;
         return true;        
     }
     
-    return (node->symbol->lucyType == node->rhs->lucyType);    
+    return (node->symbol->lucyType->equals(node->rhs->lucyType));    
 }
 
 bool TypeChecker::typeCheckAST(BinaryNode* node) {
     bool result = typeCheckAST(node->lhs);
-    if (!result)
+    if (!result) {
+        std::cout << "Returning false" << std::endl;
         return result;
+    }
     
     result = typeCheckAST(node->rhs);
-    if (!result)
+    if (!result) {
+        std::cout << "Returning false" << std::endl;
         return result;
+    }
 
     if (node->lhs->lucyType->type == LucyType::Primitive && node->rhs->lucyType->type == LucyType::Primitive) {
         if (node->lhs->lucyType->primitive != node->rhs->lucyType->primitive) {
@@ -50,11 +56,16 @@ bool TypeChecker::typeCheckAST(BinaryNode* node) {
         node->lucyType = node->lhs->lucyType;
         return true;
     }
+
+    std::cout << "Returning false" << std::endl;
+
     return false;
 }
 
 bool TypeChecker::typeCheckAST(CastNode* node) {
-    return typeCheckAST(node->node);    
+    bool val = typeCheckAST(node->node);    
+    std::cout << "cast returning " << val << std::endl;
+    return val;
 }
 
 } // namespace lucy

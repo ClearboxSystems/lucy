@@ -24,6 +24,17 @@ struct LucyType {
         lt->primitive = prim;
         return lt;
     }
+
+    bool equals(LucyType *that) {
+        if (type != that->type)
+            return false;
+
+        if (type == Primitive && primitive == that->primitive)
+            return true;
+
+        // FIXME: This needs to be implemented for other types
+        return false;
+    }
 };
 
 class TypeChecker {
