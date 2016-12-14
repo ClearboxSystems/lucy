@@ -23,8 +23,9 @@ typedef lucy::BisonParser::token token;
 [ \t\n]+            /* ignore whitespace */
 "//"[^\n]*          /* ignore comments */
 
-"fun"       return token::FUN;
+"fn"        return token::FN;
 "extern"    return token::EXTERN;
+"as"        return token::AS;
 "int"       return token::PRIM_INT;
 "float"     return token::PRIM_FLOAT;
 

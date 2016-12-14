@@ -1,5 +1,6 @@
 #include "SymbolNode.hh"
 #include "Type.hh"
+#include "../codegen/SymbolTable.hh"
 
 namespace lucy {
 

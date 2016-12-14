@@ -56,12 +56,13 @@
 %token COLON
 %token OPEN_PAREN CLOSE_PAREN
 %token LIST_START LIST_END
-%token FUN EXTERN
-%token PRIM_INT PRIM_FLOAT
+%token FN EXTERN
+%token AS PRIM_INT PRIM_FLOAT
 %token END 0
 
 %nonassoc ASSIGN
 %nonassoc EQUALS
+%precedence AS
 %left ADD SUBTRACT
 %left MULTIPLY DIVIDE
 
@@ -73,7 +74,7 @@
 %type <proto> prototype
 %type <func> definition
 %type <call> call
-%type <prim> prim_type cast
+%type <prim> prim_type
 
 %%
 %start top;
@@ -89,7 +90,7 @@ statement :
   | EXTERN prototype SEMICOLON {parser.emitExtern($2); }
   ;
 
-definition : FUN prototype ASSIGN expr {
+definition : FN prototype ASSIGN expr {
 	$$ = new FunctionDef($2, $4);	
 };
 
@@ -115,8 +116,6 @@ list :	{ $$ = new std::vector<ASTNode *>(); }
  | list COMMA expr { $$ = $1; $$->push_back($3); }
  ;
 
-cast : OPEN_PAREN prim_type CLOSE_PAREN { $$ = $2; };
-
 assignment : symbol ASSIGN expr { 
 						$$ = new AssignmentNode($1, $3); };
 
@@ -126,21 +125,22 @@ symbol : IDENTIFIER			{ $$ = new SymbolNode(*$1); }
 
 prim_type :  PRIM_INT       { $$ = Integer; }
  | PRIM_FLOAT               { $$ = Float; }
+ | OPEN_PAREN prim_type CLOSE_PAREN { $$ = $2; }
  ;
 
 expr :
-    expr ADD expr 				{ $$ = new BinaryNode('+', $1, $3); }
-  | expr SUBTRACT expr			{ $$ = new BinaryNode('-', $1, $3); }
-  | expr MULTIPLY expr 			{ $$ = new BinaryNode('*', $1, $3); }
-  | expr DIVIDE expr 			{ $$ = new BinaryNode('/', $1, $3); }
-  | expr EQUALS expr 			{ $$ = new BinaryNode('=', $1, $3); }
-  | symbol 						{ $$ = $1; }
-  |	INTEGER						{ $$ = new IntegerNode($1); }
-  |	FLOAT						{ $$ = new FloatNode($1); }
-  | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; }
-  | LIST_START list LIST_END 	{ $$ = new ListNode($2); }
-  | call 						{ $$ = $1; }
-  | cast expr                   { $$ = new CastNode($2, LucyType::getPrimitive($1)); }
+    expr ADD expr                   { $$ = new BinaryNode('+', $1, $3); }
+  | expr SUBTRACT expr              { $$ = new BinaryNode('-', $1, $3); }
+  | expr MULTIPLY expr              { $$ = new BinaryNode('*', $1, $3); }
+  | expr DIVIDE expr                { $$ = new BinaryNode('/', $1, $3); }
+  | expr EQUALS expr                { $$ = new BinaryNode('=', $1, $3); }
+  | IDENTIFIER                      { $$ = new SymbolNode(*$1); }
+  | INTEGER                         { $$ = new IntegerNode($1); }
+  | FLOAT                           { $$ = new FloatNode($1); }
+  | OPEN_PAREN expr CLOSE_PAREN     { $$ = $2; }
+  | LIST_START list LIST_END        { $$ = new ListNode($2); }
+  | call                            { $$ = $1; }
+  | expr AS prim_type               { $$ = new CastNode($1, LucyType::getPrimitive($3)); }
   ;
 
 %%

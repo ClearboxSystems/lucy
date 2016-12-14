@@ -24,6 +24,7 @@ add_library(parser
   ${BISON_BisonParser_OUTPUTS}
   ${FLEX_FlexLexer_OUTPUTS}
 )
+target_include_directories(parser PRIVATE ${LLVM_INCLUDE_DIRS})
 
 set_target_properties(
     parser PROPERTIES
