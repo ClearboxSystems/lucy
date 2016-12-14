@@ -6,6 +6,7 @@
 
 namespace lucy {
 
+class SymbolTable;
 struct LucyType {
     LucyType() {}
     enum {Primitive, Tuple, Function, Alias} type;
@@ -38,14 +39,15 @@ struct LucyType {
 };
 
 class TypeChecker {
-    bool typeCheckAST(AssignmentNode* node);
-    bool typeCheckAST(BinaryNode* node);
-    bool typeCheckAST(CastNode* node);
-
+    bool typeCheckAST(AssignmentNode* node, SymbolTable *symbolTable);
+    bool typeCheckAST(BinaryNode* node, SymbolTable *symbolTable);
+    bool typeCheckAST(CastNode* node, SymbolTable *symbolTable);
+    bool typeCheckAST(SymbolNode* node, SymbolTable *symbolTable);
+    
 public:
-    TypeChecker()  {}
+    TypeChecker() {}
 
-    bool typeCheckAST(ASTNode *node);
+    bool typeCheckAST(ASTNode *node, SymbolTable *symbolTable);
 };
 
 //

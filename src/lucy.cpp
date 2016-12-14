@@ -2,6 +2,7 @@
 #include "codegen/IRRenderer.hh"
 #include "ast.hh"
 #include "ast/Type.hh"
+#include "codegen/SymbolTable.hh"
 
 #include <vector>
 #include <string>
@@ -13,13 +14,16 @@ using namespace std;
 class Lucy : public IParserCallback {
     IRRenderer renderer;
     Parser &parser;
+    SymbolTable *symbolTable;
     TypeChecker typeChecker;
     
 public:
-    Lucy() : parser(*(new Parser(*this))) {}
+    Lucy() : parser(*(new Parser(*this))) {
+        symbolTable = new SymbolTable();
+    }
     
     void handleStatement(ASTNode *node) {
-        if (typeChecker.typeCheckAST(node)) {
+        if (typeChecker.typeCheckAST(node, symbolTable)) {
             cout << node->toString() << endl;
             renderer.handleTopLevel(node);
         } else {

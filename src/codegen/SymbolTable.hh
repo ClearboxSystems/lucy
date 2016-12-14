@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../ast/SymbolNode.hh"
 #include "../ast/Type.hh"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Value.h"
@@ -30,6 +29,8 @@ public:
     SymbolTable *pushScope(bool allocaBarrier);
     SymbolTable *popScope();    
 
+    Symbol *getSymbol(const std::string &name, bool traverseParents = true);
+    bool addSymbol(Symbol *symbol);
 };
 
 } // namespace lucy
