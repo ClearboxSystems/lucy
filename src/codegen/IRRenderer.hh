@@ -33,7 +33,6 @@ class IRRenderer {
 private:
     map<string, Value *> namedValues;
     map<string, FunctionPrototype *> functionPrototypes;
-    map<string, Value *> globalVariables;
     
     IRRenderer(const IRRenderer& orig);
     IRRenderer(unique_ptr<Module> module);
@@ -41,12 +40,14 @@ private:
     
     IRRenderer &operator =(IRRenderer other);
 
+    llvm::Value *generateIR(ASTNode *node);
     llvm::Value *generateIR(IntegerNode *node);
     llvm::Value *generateIR(FloatNode *node);
     llvm::Value *generateIR(SymbolNode *node);
     llvm::Value *generateIR(BinaryNode *node);
     llvm::Value *generateIR(CallNode *node);
     llvm::Value *generateIR(CastNode *node);
+    llvm::Value *generateIR(AssignmentNode *node);
     llvm::Function *generateIR(FunctionPrototype *proto);
 
     unique_ptr<llvm::orc::KaleidoscopeJIT> jit;
@@ -73,7 +74,6 @@ public:
     
     AllocaInst *createEntryBlockAlloca(Function *func, const string &name);
     
-    llvm::Value *generateIR(ASTNode *node);
     llvm::Function *generateIR(FunctionDef *definition);
     void handleTopLevel(ASTNode *node);
     void handleExtern(FunctionPrototype *node);

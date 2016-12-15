@@ -43,4 +43,21 @@ bool SymbolTable::addSymbol(Symbol *symbol) {
     return true;
 }
 
+
+bool SymbolTable::storeValue(const std::string &name, llvm::Value *value) {
+    Symbol *sym = getSymbol(name, true);
+    if (!sym) {
+        std::cerr << "Unknown symbol: " << name << std::endl; 
+        return false;
+    }
+
+    if (sym->value) {
+        std::cerr << "Error, symbol: " << name << " has already been assigned to!" << std::endl; 
+        return false;        
+    }
+    
+    sym->value = value;
+    
+    return true;
+}    
 } // namespace lucy

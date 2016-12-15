@@ -31,6 +31,7 @@ public:
 
     Symbol *getSymbol(const std::string &name, bool traverseParents = true);
     bool addSymbol(Symbol *symbol);
+    bool storeValue(const std::string &name, llvm::Value *value);
 };
 
 } // namespace lucy

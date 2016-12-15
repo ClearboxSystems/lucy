@@ -10,6 +10,7 @@ enum PrimitiveType {
 };    
     
 struct LucyType;
+class SymbolTable;
 class ASTNode {
 public:
     ASTNode(LucyType *lucyType = nullptr) : lucyType(lucyType) {}
@@ -21,6 +22,7 @@ public:
     std::string lucyTypeToString(struct LucyType *lucyType);
     
     struct LucyType *lucyType = nullptr;
+    SymbolTable *symbolTable = nullptr;
 };
 
 }

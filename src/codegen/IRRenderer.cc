@@ -13,6 +13,7 @@
 #include "llvm/Support/TargetSelect.h"
 
 #include "../ast/Type.hh"
+#include "SymbolTable.hh"
 
 #include <iostream>
 #include <vector>
@@ -109,6 +110,8 @@ Value *IRRenderer::generateIR(ASTNode *node) {
         return generateIR((CallNode *)node);
     else if (nodeType == "CastNode")
         return generateIR((CastNode *)node);
+    else if (nodeType == "AssignmentNode")
+        return generateIR((AssignmentNode *)node);
     
     std::cerr << "IR Generator not defined for node type: " << nodeType << std::endl;            
     return nullptr;            
@@ -146,14 +149,16 @@ Value *IRRenderer::generateIR(BinaryNode* node) {
     return 0;
 }
 
-Value *IRRenderer::generateIR(SymbolNode *node) {
-    Value *v = getNamedValue(node->name);
-    
-    if (!v)
-        v = globalVariables[node->name];
-
-    if (!v)
+Value *IRRenderer::generateIR(SymbolNode *node) {    
+    Symbol *sym = node->symbolTable->getSymbol(node->name, true);
+    if (!sym) {
         std::cerr << "Unknown Variable: " << node->name << std::endl;
+        return 0;
+    }
+
+    Value * v = sym->value;
+    if (!v)
+        std::cerr << "Variable was not set: " << node->name << std::endl;
 
     return v;
 }
@@ -213,6 +218,14 @@ Value *IRRenderer::generateIR(FloatNode *node) {
     return llvm::ConstantFP::get(getLLVMContext(), llvm::APFloat(node->val));
 }
 
+Value *IRRenderer::generateIR(AssignmentNode *node) {
+    Value *val = generateIR(node->rhs);
+    node->symbolTable->storeValue(node->symbol->name, val);
+
+    return val;
+}
+
+
 Function *IRRenderer::generateIR(FunctionPrototype *proto) {
     std::vector<Type *> ints(proto->args.size(), Type::getInt64Ty(context));
     FunctionType *FT = FunctionType::get(Type::getInt64Ty(context), ints, false);
@@ -260,12 +273,6 @@ Function *IRRenderer::generateIR(FunctionDef *def) {
 }
 
 void IRRenderer::handleTopLevel(ASTNode *node) {
-    std::string assignName;
-    if (node->getNodeType() == "AssignmentNode") {
-        assignName = ((AssignmentNode *)node)->symbol->name;
-        node = ((AssignmentNode *)node)->rhs;
-    }
-
     std::vector<std::string> args;
     auto proto = new FunctionPrototype("__anon_expr", args);
     auto func = new FunctionDef(proto, node);
@@ -283,14 +290,10 @@ void IRRenderer::handleTopLevel(ASTNode *node) {
             long (*fp)() = (long (*)())(intptr_t)topLevelSymbol.getAddress();
             long val = fp();
             std::cout << "Evaluated to " << val << std::endl;
-            if (assignName.size() > 0)
-                globalVariables[assignName] = llvm::ConstantInt::get(getLLVMContext(), llvm::APInt(64, val));
         } else if (lucyType->type == LucyType::Primitive && lucyType->primitive == Float) {
             double (*fp)() = (double (*)())(intptr_t)topLevelSymbol.getAddress();
             double val = fp();
             std::cout << "Evaluated to " << val << std::endl;            
-            if (assignName.size() > 0)
-                globalVariables[assignName] = llvm::ConstantFP::get(getLLVMContext(), llvm::APFloat(val));
         }
 
         jit->removeModule(H);

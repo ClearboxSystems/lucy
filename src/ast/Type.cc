@@ -7,13 +7,15 @@
 namespace lucy {
     
 bool TypeChecker::typeCheckAST(ASTNode *node, SymbolTable *symbolTable) {
+    node->symbolTable = symbolTable;
+
     std::cout << "Typechecking " << node->getNodeType() << ": " << node->toString() << std::endl;
     std::cout << "Type: " << node->lucyTypeToString(node->lucyType) << std::endl;
     
     if(node->getNodeType() == "AssignmentNode") return typeCheckAST((AssignmentNode *)node, symbolTable);
     if(node->getNodeType() == "BinaryNode") return typeCheckAST((BinaryNode *)node, symbolTable);
     if(node->getNodeType() == "CastNode") return typeCheckAST((CastNode *)node, symbolTable);
-     if(node->getNodeType() == "SymbolNode") return typeCheckAST((SymbolNode *)node, symbolTable);
+    if(node->getNodeType() == "SymbolNode") return typeCheckAST((SymbolNode *)node, symbolTable);
     
     return true;
 }
@@ -56,7 +58,8 @@ bool TypeChecker::typeCheckAST(AssignmentNode* node, SymbolTable *symbolTable) {
     symbol = new Symbol();
     symbol->name = node->symbol->name;
     symbol->lucyType = node->symbol->lucyType;
-    
+
+    node->lucyType = node->symbol->lucyType;
     return symbolTable->addSymbol(symbol);
 }
 
